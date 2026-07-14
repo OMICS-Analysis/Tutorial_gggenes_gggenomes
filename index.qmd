@@ -1,0 +1,694 @@
+---
+title: "Manual de Visualización Genómica con gggenes y gggenomes"
+subtitle: "Tutorial práctico"
+author: "OMICs Analysis"
+date: "2026-07-14"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+    theme: yeti
+    fig-cap-location: bottom
+    code-fold: false
+    code-tools: true
+execute:
+  echo: true
+  warning: false
+  message: false
+  cache: true
+  fig-align: center
+  fig-format: png
+  fig-dpi: 300
+---
+
+![](images/logo_OAN_for_white.png){fig-align="center" width="300"}
+
+```{r}
+#| label: setup
+#| include: false
+
+# ABRIR DISPOSITIVO PNG ANTES DE TODO
+# Esto evita el error "ventana gráfica tiene dimensión(es) cero"
+png("/tmp/gggenes_temp.png", width = 1200, height = 800)
+
+# Paquetes necesarios
+packages <- c(
+  "ggplot2", "gggenes", "gggenomes", "tidyverse", 
+  "patchwork", "dplyr", "tidyr", "stringr"
+)
+
+for (pkg in packages) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cloud.r-project.org")
+    library(pkg, character.only = TRUE)
+  }
+}
+
+set.seed(42)
+
+```
+
+# Prefacio {.unnumbered}
+
+Este manual enseña a usar `gggenes` y `gggenomes` para visualizar datos genómicos en R. Está dirigido a investigadores con conocimientos básicos de `ggplot2`.
+
+**Requisitos previos:** - R \>= 4.2.0 - RStudio - Conocimientos básicos de `ggplot2`
+
+------------------------------------------------------------------------
+
+# Parte I: gggenes — Mapas de Genes con Flechas
+
+## Fundamentos de gggenes
+
+`gggenes` es una extensión de `ggplot2` que dibuja genes como flechas. Necesita tres aesthetics obligatorias:
+
+- **`xmin`**: Inicio del gen
+- **`xmax`**: Fin del gen
+- **`y`**: Molécula (cromosoma, plásmido)
+
+Opcional: **`forward`** controla la dirección de la flecha.
+
+`geom_gene_arrow()` dibuja cada gen como flecha. La cabeza indica la dirección.
+
+```{r}
+#| label: fig-gene-arrow-basico
+#| fig-cap: "Mapa de genes básico con gggenes"
+#| fig-width: 10
+#| fig-height: 4
+
+library(ggplot2)
+library(gggenes)
+
+data("example_genes")
+head(example_genes)
+
+ggplot(example_genes, aes(
+  xmin = start, xmax = end, y = molecule, fill = gene
+)) +
+  geom_gene_arrow() +
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  scale_fill_brewer(palette = "Set3") +
+  theme_genes() +
+  labs(
+    title = "Mapa de genes básico",
+    x = "Posición (bp)",
+    y = "Molécula",
+    fill = "Gen"
+  )
+```
+
+**Notas:** - `facet_wrap(scales = "free", ncol = 1)` pone cada molécula en una fila con su propia escala. - `theme_genes()` es un tema optimizado para mapas de genes.
+
+## Datos simulados
+
+Crearemos plásmidos bacterianos con genes de resistencia:
+
+```{r}
+#| label: fig-datos-simulados
+#| fig-cap: "Plásmidos bacterianos simulados"
+#| fig-width: 10
+#| fig-height: 5
+
+set.seed(123)
+
+plasmidos <- c("pCM1", "pCM2", "pCM3")
+genes_nombres <- c("blaCTX-M", "tetA", "sul1", "qnrS", "intI1", 
+                   "traA", "repA", "parA")
+funciones <- c("Beta-lactamasa", "Tetraciclina", "Sulfonamida", 
+               "Quinolona", "Integrasa", "Conjugación", 
+               "Replicación", "Partición")
+
+genes_simulados <- tibble()
+
+for (plas in plasmidos) {
+  n_genes <- sample(8:12, 1)
+  pos <- 100
+
+  for (i in 1:n_genes) {
+    longitud <- sample(600:2000, 1)
+    gap <- sample(50:200, 1)
+    strand <- sample(c("+", "-"), 1)
+    gene_idx <- sample(1:length(genes_nombres), 1)
+
+    genes_simulados <- bind_rows(genes_simulados, tibble(
+      molecule = plas,
+      gene = genes_nombres[gene_idx],
+      start = pos,
+      end = pos + longitud,
+      strand = strand,
+      function_group = funciones[gene_idx]
+    ))
+
+    pos <- pos + longitud + gap
+  }
+}
+
+genes_simulados <- genes_simulados %>%
+  group_by(molecule) %>%
+  mutate(start = start - min(start) + 1) %>%
+  ungroup()
+
+ggplot(genes_simulados, aes(
+  xmin = start, xmax = end, y = molecule, fill = function_group
+)) +
+  geom_gene_arrow() +
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  scale_fill_brewer(palette = "Paired") +
+  theme_genes() +
+  labs(
+    title = "Plásmidos bacterianos simulados",
+    x = "Posición (bp)",
+    y = "Plásmido",
+    fill = "Función"
+  )
+```
+
+## Alineamiento de genes
+
+`make_alignment_dummies()` alinea un gen de referencia verticalmente entre moléculas. Se usa con `geom_blank()`:
+
+```{r}
+#| label: fig-alineamiento
+#| fig-cap: "Alineamiento del gen blaCTX-M"
+#| fig-width: 10
+#| fig-height: 5
+
+dummies <- make_alignment_dummies(
+  genes_simulados,
+  aes(xmin = start, xmax = end, y = molecule, id = gene),
+  on = "blaCTX-M"
+)
+
+ggplot(genes_simulados, aes(
+  xmin = start, xmax = end, y = molecule, fill = function_group
+)) +
+  geom_gene_arrow() +
+  geom_blank(data = dummies, inherit.aes = FALSE) +  # IMPORTANTE: inherit.aes = FALSE
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  scale_fill_brewer(palette = "Paired") +
+  theme_genes() +
+  labs(
+    title = "Alineamiento del gen blaCTX-M",
+    x = "Posición (bp)",
+    y = "Plásmido"
+  )
+```
+
+**Clave:** `geom_blank(data = dummies, inherit.aes = FALSE)` extiende los rangos sin heredar aesthetics del `ggplot()` principal. Si omites `inherit.aes = FALSE`, buscará `function_group` en `dummies` y fallará.
+
+## Etiquetado de genes
+
+Para poner nombres dentro de las flechas usamos `geom_text()`:
+
+```{r}
+#| label: fig-etiquetado
+#| fig-cap: "Etiquetado de genes"
+#| fig-width: 11
+#| fig-height: 6
+
+genes_largos <- genes_simulados %>%
+  mutate(longitud = end - start) %>%
+  filter(longitud > 1000)
+
+ggplot(genes_largos, aes(
+  xmin = start, xmax = end, y = molecule, fill = function_group
+)) +
+  geom_gene_arrow() +
+  geom_text(
+    aes(x = (start + end) / 2, label = gene),
+    size = 2.5, color = "black", fontface = "bold",
+    check_overlap = TRUE
+  ) +
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  scale_fill_brewer(palette = "Paired") +
+  theme_genes() +
+  labs(
+    title = "Etiquetado de genes",
+    x = "Posición (bp)",
+    y = "Plásmido"
+  )
+```
+
+**Tip:** `check_overlap = TRUE` evita que las etiquetas se encimen.
+
+## Dirección de genes
+
+El aesthetic `forward` controla la dirección independientemente de las coordenadas:
+
+```{r}
+#| label: fig-direccion
+#| fig-cap: "Control de dirección con forward"
+#| fig-width: 10
+#| fig-height: 6
+
+genes_dir <- genes_simulados %>%
+  mutate(forward = ifelse(strand == "+", TRUE, FALSE))
+
+p1 <- ggplot(genes_dir, aes(
+  xmin = start, xmax = end, y = molecule, fill = function_group
+)) +
+  geom_gene_arrow() +
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  scale_fill_brewer(palette = "Paired") +
+  theme_genes() +
+  labs(title = "Sin forward (dirección por coordenadas)")
+
+p2 <- ggplot(genes_dir, aes(
+  xmin = start, xmax = end, y = molecule, 
+  fill = function_group, forward = forward
+)) +
+  geom_gene_arrow() +
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  scale_fill_brewer(palette = "Paired") +
+  theme_genes() +
+  labs(title = "Con forward (dirección explícita)")
+
+library(patchwork)
+p1 / p2
+```
+
+## Ejemplo completo
+
+Integrando todo con distintas anotaciones:
+
+```{r}
+#| label: fig-completo-gggenes
+#| fig-cap: "Mapa completo con datos example_genes"
+#| fig-width: 12
+#| fig-height: 8
+
+# Alinear genE
+dummies_genE <- make_alignment_dummies(
+  example_genes,
+  aes(xmin = start, xmax = end, y = molecule, id = gene),
+  on = "genE"
+)
+
+example_genes <- example_genes %>%
+  mutate(forward = ifelse(strand == "forward", TRUE, FALSE))
+
+ggplot(example_genes, aes(
+  xmin = start, xmax = end, y = molecule,
+  fill = gene, forward = forward
+)) +
+  geom_gene_arrow() +
+  geom_blank(data = dummies_genE, inherit.aes = FALSE) +
+  geom_text(
+    aes(x = (start + end) / 2, label = gene),
+    size = 2, color = "black", check_overlap = TRUE
+  ) +
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  scale_fill_brewer(palette = "Set3", guide = "none") +
+  theme_genes() +
+  theme(
+    strip.text = element_text(face = "bold"),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank()
+  ) +
+  labs(
+    title = "Mapa comparativo de genes",
+    x = "Posición (bp)",
+    y = NULL
+  )
+```
+
+------------------------------------------------------------------------
+
+# Parte II: gggenomes — Genómica Comparativa
+
+## Introducción
+
+`gggenomes` usa **tracks** en lugar de un solo data frame:
+
+- **`seqs`**: Secuencias (líneas horizontales)
+- **`genes`/`feats`**: Características (flechas)
+- **`links`**: Conexiones entre secuencias (sintenia)
+
+## Primer gráfico
+
+Usamos los datos `emale_*` incluidos en el paquete:
+
+```{r}
+#| label: fig-primer-gggenomes
+#| fig-cap: "Primer gráfico con gggenomes"
+#| fig-width: 12
+#| fig-height: 6
+
+library(gggenomes)
+
+head(emale_seqs)
+head(emale_genes)
+
+gggenomes(genes = emale_genes, seqs = emale_seqs) +
+  geom_seq() +
+  geom_bin_label() +
+  geom_gene(aes(fill = strand), position = "strand") +
+  scale_fill_manual(
+    values = c("+" = "steelblue", "-" = "coral"),
+    name = "Hebra"
+  ) +
+  labs(
+    title = "Genomas de virofagos EMALEs",
+    x = "Posición (bp)"
+  )
+```
+
+**Notas:** - `geom_seq()` dibuja las líneas horizontales. - `geom_bin_label()` pone los nombres a la izquierda. - `position = "strand"` separa genes en `+` (arriba) y `-` (abajo).
+
+## Múltiples tracks
+
+Añadimos TIRs y transposones:
+
+```{r}
+#| label: fig-multiples-tracks
+#| fig-cap: "Múltiples tracks: genes, TIRs y transposones"
+#| fig-width: 12
+#| fig-height: 7
+
+head(emale_tirs)
+
+head(emale_ngaros)
+
+gggenomes(
+  genes = emale_genes,
+  seqs = emale_seqs,
+  feats = list(emale_tirs, ngaros = emale_ngaros)
+) +
+  geom_seq() +
+  geom_bin_label() +
+  geom_gene(aes(fill = strand), position = "strand") +
+  geom_feat(linewidth = 8, color = "darkgoldenrod4", alpha = 0.7) +
+  geom_feat(
+    data = feats(ngaros), 
+    color = "turquoise4", alpha = 0.3, linewidth = 16
+  ) +
+  scale_fill_manual(values = c("+" = "steelblue", "-" = "coral")) +
+  labs(title = "Múltiples tracks de características")
+```
+
+**Acceso a tracks:** - `feats()` = primer track no-genes - `feats("ngaros")` = track por nombre - `genes()` = solo CDS
+
+## Enlaces y sintenia
+
+```{r}
+#| label: fig-sintenia
+#| fig-cap: "Sintenia entre genomas virales"
+#| fig-width: 12
+#| fig-height: 7
+
+head(emale_ava)
+
+gggenomes(
+  genes = emale_genes,
+  seqs = emale_seqs,
+  links = emale_ava
+) +
+  geom_link(offset = 0.15) +
+  geom_seq() +
+  geom_bin_label() +
+  geom_gene(aes(fill = strand), position = "strand") +
+  scale_fill_manual(values = c("+" = "steelblue", "-" = "coral")) +
+  labs(title = "Sintenia entre EMALEs")
+```
+
+`offset = 0.15` separa los enlaces de las secuencias para que no se encimen.
+
+## Sincronización con sync()
+
+`sync()` invierte automáticamente secuencias para alinear mejor los enlaces:
+
+```{r}
+#| label: fig-sync
+#| fig-cap: "Genomas sincronizados con sync()"
+#| fig-width: 12
+#| fig-height: 7
+
+gggenomes(
+  genes = emale_genes,
+  seqs = emale_seqs,
+  links = emale_ava
+) %>%
+  sync() +
+  geom_link(offset = 0.15, color = "white") +
+  geom_seq() +
+  geom_bin_label() +
+  geom_gene(aes(fill = strand), position = "strand") +
+  scale_fill_manual(values = c("+" = "steelblue", "-" = "coral")) +
+  labs(title = "Después de sync()")
+```
+
+## Zoom con focus()
+
+```{r}
+#| label: fig-zoom
+#| fig-cap: "Zoom en el gen MCP"
+#| fig-width: 12
+#| fig-height: 5
+
+gggenomes(genes = emale_genes, seqs = emale_seqs) %>%
+  focus(name == "MCP", .expand = 2000) +
+  geom_seq() +
+  geom_bin_label() +
+  geom_gene(aes(fill = name == "MCP"), position = "strand") +
+  geom_gene_tag(aes(label = name), check_overlap = TRUE) +
+  scale_fill_manual(values = c("TRUE" = "red", "FALSE" = "gray60"), guide = "none") +
+  labs(title = "Zoom en MCP (+/- 2000 bp)")
+```
+
+`.expand = 2000` muestra 2000 bp a cada lado del gen MCP.
+
+## Ejemplo completo
+
+Gráfico avanzado con todos los elementos:
+
+```{r}
+#| label: fig-completo-gggenomes
+#| fig-cap: "Gráfico completo EMALEs con COGs, TIRs, Ngaros y GC"
+#| fig-width: 14
+#| fig-height: 8
+
+gggenomes(
+  genes = emale_genes, 
+  seqs = emale_seqs,
+  feats = list(emale_tirs, ngaros = emale_ngaros, gc = emale_gc)
+) %>%
+  add_sublinks(emale_prot_ava) %>%
+  add_clusters(emale_cogs) %>%
+  sync() +
+  geom_link(data = links(2), offset = 0.15, color = "white", alpha = 0.6) +
+  geom_seq() +
+  geom_bin_label(size = 4, fontface = "bold") +
+  geom_feat(linewidth = 6, color = "thistle4") +
+  geom_feat(data = feats(ngaros), color = "turquoise4", alpha = 0.3, linewidth = 16) +
+  geom_gene(
+    aes(fill = ifelse(is.na(cluster_id), NA, 
+                        stringr::str_glue("{cluster_id} [{cluster_size}]"))),
+    position = "strand"
+  ) +
+  geom_gene_tag(aes(label = name), nudge_y = 0.1, check_overlap = TRUE, size = 2.5) +
+  geom_wiggle(
+    aes(z = score, linetype = "GC"), 
+    data = feats(gc),
+    fill = "lavenderblush4", 
+    position = position_nudge(y = -0.2), 
+    height = 0.2
+  ) +
+  scale_fill_brewer("COGs", palette = "Dark2", na.value = "cornsilk3") +
+  theme_minimal() +
+  labs(
+    title = "Arquitectura genómica de EMALEs",
+    x = "Posición (bp)"
+  )
+```
+
+------------------------------------------------------------------------
+
+# Parte III: Personalización
+
+## Colores y temas
+
+```{r}
+#| label: fig-personalizacion
+#| fig-cap: "Personalización de colores"
+#| fig-width: 12
+#| fig-height: 6
+
+paleta <- c(
+  "estructural" = "#E41A1C", "enzima" = "#377EB8",
+  "regulación" = "#4DAF4A", "otra" = "#999999"
+)
+
+emale_annot <- emale_genes %>%
+  mutate(funcion = case_when(
+    str_detect(name, "MCP") ~ "estructural",
+    str_detect(name, "pol|hel") ~ "enzima",
+    str_detect(name, "reg") ~ "regulación",
+    TRUE ~ "otra"
+  ))
+
+gggenomes(genes = emale_annot, seqs = emale_seqs) +
+  geom_seq() +
+  geom_bin_label() +
+  geom_gene(aes(fill = funcion), position = "strand") +
+  scale_fill_manual(values = paleta, name = "Función") +
+  theme_minimal() +
+  labs(title = "Colores personalizados por función")
+```
+
+## Exportar figuras
+
+```{r}
+#| label: exportacion
+#| eval: false
+#| code-summary: "Código para exportar"
+
+# PNG (rápido, para web)
+ggsave("figura.png", width = 10, height = 6, dpi = 300)
+
+# PDF (vectorial, para publicaciones)
+ggsave("figura.pdf", width = 10, height = 6)
+
+# SVG (editable en Illustrator)
+ggsave("figura.svg", width = 10, height = 6)
+```
+
+------------------------------------------------------------------------
+
+# Apéndice: De genomas .fna a gráfico de sintenia
+
+## A.1 Anotación con Bakta
+
+```{bash, eval=FALSE}
+# Instalar
+conda install -c bioconda bakta
+```
+
+# Anotar
+
+```{bash, eval=FALSE}
+bakta --db /path/to/db --output results/bakta/genoma1 --prefix genoma1 genoma1.fna
+
+Salida clave: `genoma1.gff3` (coordenadas de genes).
+
+## A.2 Alineamiento con minimap2
+
+# Instalar
+conda install -c bioconda minimap2
+
+# Alinear
+minimap2 -x asm20 reference.fna query.fna > aln.paf
+```
+
+Formato PAF: 12 columnas tabuladas con coordenadas de alineamiento.
+
+## A.3 Leer datos en R
+
+```{r, eval=FALSE}
+#| label: leer-datos
+#| eval: false
+#| code-summary: "Código para importar GFF3 y PAF"
+
+# Leer GFF3 de Bakta
+library(readr)
+genes <- read_tsv("genoma1.gff3", comment = "#", col_names = FALSE) %>%
+  setNames(c("seq_id", "source", "type", "start", "end", 
+             "score", "strand", "phase", "attributes")) %>%
+  filter(type == "CDS") %>%
+  mutate(
+    name = str_extract(attributes, "Name=([^;]+)", group = 1),
+    product = str_extract(attributes, "product=([^;]+)", group = 1)
+  )
+
+# Leer PAF
+links <- read_tsv("aln.paf", col_names = FALSE) %>%
+  select(
+    seq_id = X1, start = X3, end = X4, strand = X5,
+    seq_id2 = X6, start2 = X8, end2 = X9,
+    map_match = X10, map_length = X11, map_quality = X12
+  )
+```
+
+## A.4 Gráfico de sintenia final
+
+```{r, eval=TRUE}
+#| fig-cap: "Gráfico de sintenia entre plásmidos"
+#| fig-width: 14
+#| fig-height: 10
+
+# Datos simulados para demostración
+seqs_demo <- data.frame(seq_id = c("pCM5", "pCM6", "pCM4"),
+  length = c(48895, 50350, 39958)
+)
+
+set.seed(42)
+genes_demo <- data.frame()
+for (s in seqs_demo$seq_id) {
+  n <- sample(30:50, 1)
+  pos <- 100
+  for (i in 1:n) {
+    len <- sample(400:1800, 1)
+    gap <- sample(50:150, 1)
+    genes_demo <- bind_rows(genes_demo, tibble(
+      seq_id = s, start = pos, end = pos + len,
+      strand = sample(c("+", "-"), 1),
+      name = paste0("gene_", i),
+      type = "CDS"
+    ))
+    pos <- pos + len + gap
+    if (pos > seqs_demo$length[seqs_demo$seq_id == s] - 500) break
+  }
+}
+
+links_demo <- data.frame(
+  seq_id = c("pCM5", "pCM5", "pCM6"),
+  start = c(1000, 15000, 2000),
+  end = c(3000, 17000, 4000),
+  seq_id2 = c("pCM6", "pCM4", "pCM4"),
+  start2 = c(2000, 500, 3000),
+  end2 = c(4000, 2500, 5000),
+  strand = "+",
+  map_quality = 50
+)
+
+gggenomes(seqs = seqs_demo, genes = genes_demo, links = links_demo) %>%
+  sync() +
+  geom_link(offset = 0.12, alpha = 0.5, fill = "gray50") +
+  geom_seq() +
+  # geom_bin_label(aes(label = paste0(seq_id, "\n", length, " bp")), hjust = 1) +
+  geom_gene(aes(fill = strand), position = "strand") +
+  scale_fill_manual(values = c("+" = "steelblue", "-" = "coral")) +
+  theme_minimal() +
+  theme(
+    panel.grid = element_blank(),
+    axis.text.y = element_blank(),
+    axis.title = element_blank(),
+    legend.position = "bottom"
+  ) +
+  labs(title = "Sintenia entre plásmidos bacterianos")
+```
+
+------------------------------------------------------------------------
+
+# Bonus: Solución de problemas
+
+## B.1 Errores comunes
+
+| Error | Causa | Solución |
+|:-----------------------|:-----------------------|:-----------------------|
+| `ventana gráfica tiene dimensión(es) cero` | Sin dispositivo gráfico | Abrir PNG antes: `png("temp.png")` |
+| `objeto 'X' no encontrado` en `geom_blank()` | Herencia de aesthetics | `geom_blank(data = dummies, inherit.aes = FALSE)` |
+| Genes no aparecen | `seq_id` no coincide | Verificar `setdiff(genes$seq_id, seqs$seq_id)` |
+| Links no aparecen | Coordenadas invertidas | Asegurar `start < end` en ambos lados |
+
+## B.2 Instalación de paquetes
+
+``` r
+# Desde CRAN
+install.packages(c("gggenes", "gggenomes", "tidyverse"))
+
+# Si falla, desde r-universe
+install.packages("gggenes", repos = "https://wilkox.r-universe.dev")
+```
+
+------------------------------------------------------------------------
