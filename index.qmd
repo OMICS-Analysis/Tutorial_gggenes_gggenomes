@@ -86,10 +86,10 @@ head(example_genes)
 ggplot(example_genes, aes(
   xmin = start, xmax = end, y = molecule, fill = gene
 )) +
-  geom_gene_arrow() +
-  facet_wrap(~ molecule, scales = "free", ncol = 1) +
+  geom_gene_arrow() + # imagen de flecha
+  facet_wrap(~ molecule, scales = "free", ncol = 1) + # indispensable para separar la fila de cada gen
   scale_fill_brewer(palette = "Set3") +
-  theme_genes() +
+  theme_genes() + # theme de `ggplot` estándar para `gggenes`
   labs(
     title = "Mapa de genes básico",
     x = "Posición (bp)",
