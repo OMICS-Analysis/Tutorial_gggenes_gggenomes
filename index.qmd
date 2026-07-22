@@ -87,9 +87,9 @@ ggplot(example_genes, aes(
   xmin = start, xmax = end, y = molecule, fill = gene
 )) +
   geom_gene_arrow() + # imagen de flecha
-  facet_wrap(~ molecule, scales = "free", ncol = 1) + # indispensable para separar la fila de cada gen
+  facet_wrap(~ molecule, scales = "free", ncol = 1) +
   scale_fill_brewer(palette = "Set3") +
-  theme_genes() + # theme de `ggplot` estándar para `gggenes`
+  theme_genes() +
   labs(
     title = "Mapa de genes básico",
     x = "Posición (bp)",
@@ -100,7 +100,7 @@ ggplot(example_genes, aes(
 
 **Notas:** 
 <br>
-- `facet_wrap(scales = "free", ncol = 1)` pone cada molécula en una fila con su propia escala.
+- `facet_wrap(scales = "free", ncol = 1)` pone cada molécula en una fila con su propia escala. Si no está, todas las secuencias quedan en un solo espacio y son menos legibles.
 <br>
 - `theme_genes()` es un tema optimizado para mapas de genes.
 
@@ -173,7 +173,7 @@ ggplot(genes_simulados, aes(
 
 ## Alineamiento de genes
 
-`make_alignment_dummies()` alinea un gen de referencia verticalmente entre moléculas. Se usa con `geom_blank()`:
+`make_alignment_dummies()` alinea un gen de referencia verticalmente entre moléculas. Se usa con `geom_blank()` para forzar las posiciones nuevas:
 
 ```{r}
 #| label: fig-alineamiento
@@ -219,6 +219,7 @@ genes_largos <- genes_simulados %>%
   mutate(longitud = end - start) %>%
   filter(longitud > 1000)
 
+# graficar
 ggplot(genes_largos, aes(
   xmin = start, xmax = end, y = molecule, fill = function_group
 )) +
@@ -253,6 +254,7 @@ El aesthetic `forward` controla la dirección independientemente de las coordena
 genes_dir <- genes_simulados %>%
   mutate(forward = ifelse(strand == "+", TRUE, FALSE))
 
+# gráfica sin forward
 p1 <- ggplot(genes_dir, aes(
   xmin = start, xmax = end, y = molecule, fill = function_group
 )) +
@@ -262,6 +264,7 @@ p1 <- ggplot(genes_dir, aes(
   theme_genes() +
   labs(title = "Sin forward (dirección por coordenadas)")
 
+# gráfica con forward
 p2 <- ggplot(genes_dir, aes(
   xmin = start, xmax = end, y = molecule, 
   fill = function_group, forward = forward
@@ -302,14 +305,14 @@ ggplot(example_genes, aes(
   xmin = start, xmax = end, y = molecule,
   fill = gene, forward = forward
 )) +
-  geom_gene_arrow() +
-  geom_blank(data = dummies_genE, inherit.aes = FALSE) +
-  geom_text(
+  geom_gene_arrow() + # flechas
+  geom_blank(data = dummies_genE, inherit.aes = FALSE) + # alineado
+  geom_text( # etiquetas de genes
     aes(x = (start + end) / 2, label = gene),
     size = 2, color = "black", check_overlap = TRUE
   ) +
-  facet_wrap(~ molecule, scales = "free", ncol = 1) +
-  scale_fill_brewer(palette = "Set3", guide = "none") +
+  facet_wrap(~ molecule, scales = "free", ncol = 1) + # separado en filas
+  scale_fill_brewer(palette = "Set3", guide = "none") + # colores
   theme_genes() +
   theme(
     strip.text = element_text(face = "bold"),
@@ -329,7 +332,7 @@ ggplot(example_genes, aes(
 
 ## Introducción
 
-`gggenomes` usa **tracks** en lugar de un solo data frame:
+En vez de un solo data frame, `gggenomes` usa **tracks** que pueden ser a su vez data frames para enriquecer las gráficas:
 
 - **`seqs`**: Secuencias (líneas horizontales)
 - **`genes`/`feats`**: Características (flechas)
@@ -366,11 +369,13 @@ gggenomes(genes = emale_genes, seqs = emale_seqs) +
 
 **Notas:**
 <br>
-- `geom_seq()` dibuja las líneas horizontales.
+- `geom_seq()` dibuja las líneas horizontales que fungen como guías.
 <br>
-- `geom_bin_label()` pone los nombres a la izquierda.
+- `geom_bin_label()` pone los nombres de las secuencias (a la izquierda por defecto).
 <br>
 - `position = "strand"` separa genes en `+` (arriba) y `-` (abajo).
+<br>
+- La separación de secuencias en filas es automática. No requerimos a `facet_wrap()`.
 
 ## Múltiples tracks
 
@@ -405,11 +410,11 @@ gggenomes(
 
 **Acceso a tracks:**
 <br>
-- `feats()` = primer track no-genes
+- `feats()` = usa el primer track (no-genes) por defecto. `geom_feat()` llama por defecto a `feats()`.
 <br>
-- `feats("ngaros")` = track por nombre
+- `feats("ngaros")` = llama a un track por su nombre
 <br>
-- `genes()` = solo CDS
+- `genes()` = solo CDSs
 
 ## Enlaces y sintenia
 
@@ -434,11 +439,11 @@ gggenomes(
   labs(title = "Sintenia entre EMALEs")
 ```
 
-`offset = 0.15` separa los enlaces de las secuencias para que no se encimen.
+`offset = 0.15` separa los enlaces de las secuencias para que no se encimen y sea más fácil ver qué enlace es de qué secuencia.
 
 ## Sincronización con sync()
 
-`sync()` invierte automáticamente secuencias para alinear mejor los enlaces:
+`sync()` invierte automáticamente las secuencias enteras que sea necesario para mejorar la lectura minimizando los cruces entre enlaces:
 
 ```{r}
 #| label: fig-sync
@@ -478,7 +483,7 @@ gggenomes(genes = emale_genes, seqs = emale_seqs) %>%
   labs(title = "Zoom en MCP (+/- 2000 bp)")
 ```
 
-`.expand = 2000` muestra 2000 bp a cada lado del gen MCP.
+`.expand = 2000` muestra 2000 bp a cada lado del gen MCP para dar contexto.
 
 ## Ejemplo completo
 
@@ -524,6 +529,8 @@ gggenomes(
   )
 ```
 
+`geom_wiggle()` agrega información para secuencias especificadas en un `feat`; en este caso, tramos de secuencias que no se ilustran como genes por su contenido de GC. La información aparece como barras en torno a la mediana, a su vez en el eje de la secuencia.
+
 ------------------------------------------------------------------------
 
 # Parte III: Personalización
@@ -541,6 +548,7 @@ paleta <- c(
   "regulación" = "#4DAF4A", "otra" = "#999999"
 )
 
+# estructura de anotación que liga genes con su color
 emale_annot <- emale_genes %>%
   mutate(funcion = case_when(
     str_detect(name, "MCP") ~ "estructural",
@@ -579,22 +587,21 @@ ggsave("figura.svg", width = 10, height = 6)
 
 # Apéndice: De genomas .fna a gráfico de sintenia
 
-## A.1 Anotación con Bakta
+## Anotación con Bakta
 
 ```{bash, eval=FALSE}
 # Instalar
 conda install -c bioconda bakta
-```
 
 # Anotar
-
-```{bash, eval=FALSE}
 bakta --db /path/to/db --output results/bakta/genoma1 --prefix genoma1 genoma1.fna
 
-Salida clave: `genoma1.gff3` (coordenadas de genes).
+# Salida clave: `genoma1.gff3` (coordenadas de genes).
+```
 
-## A.2 Alineamiento con minimap2
+## Alineamiento con minimap2
 
+```{bash, eval=FALSE}
 # Instalar
 conda install -c bioconda minimap2
 
@@ -602,9 +609,9 @@ conda install -c bioconda minimap2
 minimap2 -x asm20 reference.fna query.fna > aln.paf
 ```
 
-Formato PAF: 12 columnas tabuladas con coordenadas de alineamiento.
+Formato [PAF](https://github.com/lh3/miniasm/blob/master/PAF.md): 12 columnas tabuladas con coordenadas de alineamiento. `minimap2` fue la herramienta que [popularizó este formato](https://doi.org/10.1093/bioinformatics/bty191), que agrega las coordenadas de los mapeos estimados [sin necesitar un alineamiento base o el detalle que da CIGAR](https://github.com/lh3/minimap2#general).
 
-## A.3 Leer datos en R
+## Leer datos en R
 
 ```{r, eval=FALSE}
 #| label: leer-datos
@@ -631,7 +638,7 @@ links <- read_tsv("aln.paf", col_names = FALSE) %>%
   )
 ```
 
-## A.4 Gráfico de sintenia final
+## Gráfico de sintenia final
 
 ```{r, eval=TRUE}
 #| fig-cap: "Gráfico de sintenia entre plásmidos"
@@ -662,6 +669,7 @@ for (s in seqs_demo$seq_id) {
   }
 }
 
+# enlaces simulados entre genes
 links_demo <- data.frame(
   seq_id = c("pCM5", "pCM5", "pCM6"),
   start = c(1000, 15000, 2000),
@@ -673,6 +681,7 @@ links_demo <- data.frame(
   map_quality = 50
 )
 
+# graficar
 gggenomes(seqs = seqs_demo, genes = genes_demo, links = links_demo) %>%
   sync() +
   geom_link(offset = 0.12, alpha = 0.5, fill = "gray50") +
@@ -694,7 +703,7 @@ gggenomes(seqs = seqs_demo, genes = genes_demo, links = links_demo) %>%
 
 # Bonus: Solución de problemas
 
-## B.1 Errores comunes
+## Errores comunes
 
 | Error | Causa | Solución |
 |:-----------------------|:-----------------------|:-----------------------|
@@ -703,7 +712,7 @@ gggenomes(seqs = seqs_demo, genes = genes_demo, links = links_demo) %>%
 | Genes no aparecen | `seq_id` no coincide | Verificar `setdiff(genes$seq_id, seqs$seq_id)` |
 | Links no aparecen | Coordenadas invertidas | Asegurar `start < end` en ambos lados |
 
-## B.2 Instalación de paquetes
+## Instalación de paquetes
 
 ``` r
 # Desde CRAN
