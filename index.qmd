@@ -98,7 +98,11 @@ ggplot(example_genes, aes(
   )
 ```
 
-**Notas:** - `facet_wrap(scales = "free", ncol = 1)` pone cada molécula en una fila con su propia escala. - `theme_genes()` es un tema optimizado para mapas de genes.
+**Notas:** 
+<br>
+- `facet_wrap(scales = "free", ncol = 1)` pone cada molécula en una fila con su propia escala.
+<br>
+- `theme_genes()` es un tema optimizado para mapas de genes.
 
 ## Datos simulados
 
@@ -110,6 +114,7 @@ Crearemos plásmidos bacterianos con genes de resistencia:
 #| fig-width: 10
 #| fig-height: 5
 
+# crear datos simulados
 set.seed(123)
 
 plasmidos <- c("pCM1", "pCM2", "pCM3")
@@ -121,6 +126,7 @@ funciones <- c("Beta-lactamasa", "Tetraciclina", "Sulfonamida",
 
 genes_simulados <- tibble()
 
+# crear genes simulando continuidad en secuencia
 for (plas in plasmidos) {
   n_genes <- sample(8:12, 1)
   pos <- 100
@@ -149,6 +155,7 @@ genes_simulados <- genes_simulados %>%
   mutate(start = start - min(start) + 1) %>%
   ungroup()
 
+# graficar datos simulados (igual al primer ejemplo)
 ggplot(genes_simulados, aes(
   xmin = start, xmax = end, y = molecule, fill = function_group
 )) +
@@ -207,6 +214,7 @@ Para poner nombres dentro de las flechas usamos `geom_text()`:
 #| fig-width: 11
 #| fig-height: 6
 
+# solo genes largos para tener etiquetas claras
 genes_largos <- genes_simulados %>%
   mutate(longitud = end - start) %>%
   filter(longitud > 1000)
@@ -285,9 +293,11 @@ dummies_genE <- make_alignment_dummies(
   on = "genE"
 )
 
+# agregar dirección
 example_genes <- example_genes %>%
   mutate(forward = ifelse(strand == "forward", TRUE, FALSE))
 
+# imagen completa
 ggplot(example_genes, aes(
   xmin = start, xmax = end, y = molecule,
   fill = gene, forward = forward
@@ -354,7 +364,13 @@ gggenomes(genes = emale_genes, seqs = emale_seqs) +
   )
 ```
 
-**Notas:** - `geom_seq()` dibuja las líneas horizontales. - `geom_bin_label()` pone los nombres a la izquierda. - `position = "strand"` separa genes en `+` (arriba) y `-` (abajo).
+**Notas:**
+<br>
+- `geom_seq()` dibuja las líneas horizontales.
+<br>
+- `geom_bin_label()` pone los nombres a la izquierda.
+<br>
+- `position = "strand"` separa genes en `+` (arriba) y `-` (abajo).
 
 ## Múltiples tracks
 
@@ -387,7 +403,13 @@ gggenomes(
   labs(title = "Múltiples tracks de características")
 ```
 
-**Acceso a tracks:** - `feats()` = primer track no-genes - `feats("ngaros")` = track por nombre - `genes()` = solo CDS
+**Acceso a tracks:**
+<br>
+- `feats()` = primer track no-genes
+<br>
+- `feats("ngaros")` = track por nombre
+<br>
+- `genes()` = solo CDS
 
 ## Enlaces y sintenia
 
