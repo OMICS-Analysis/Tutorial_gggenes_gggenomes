@@ -173,7 +173,9 @@ ggplot(genes_simulados, aes(
 
 ## Alineamiento de genes
 
-`make_alignment_dummies()` alinea un gen de referencia verticalmente entre moléculas. Se usa con `geom_blank()` para forzar las posiciones nuevas:
+`make_alignment_dummies()` alinea un gen de referencia verticalmente entre moléculas. Se usa con `geom_blank()` para forzar las posiciones nuevas. 
+
+Al crear el objeto "dummies" con los genes de referencia es importante considerar que podrían haber más de un gen con el mismo nombre en cada genoma. Si es así es mejor quedarse con una sóla de las copias:
 
 ```{r}
 #| label: fig-alineamiento
@@ -187,11 +189,18 @@ dummies <- make_alignment_dummies(
   on = "blaCTX-M"
 )
 
+#Nos quedamos con una sóla copia del gen blaCTX-M por genoma
+dummies<-dummies %>%
+  group_by(molecule) %>%
+  filter(row_number() == 1) %>%
+  ungroup() %>% as.data.frame()
+
+#Pasar la asthetic 'fill' de la función ggplot a geom_gene_arrow
+#Elimina un conflicto con la graficación de los dummies (que no tienen fill)
 ggplot(genes_simulados, aes(
-  xmin = start, xmax = end, y = molecule, fill = function_group
-)) +
-  geom_gene_arrow() +
-  geom_blank(data = dummies, inherit.aes = FALSE) +  # IMPORTANTE: inherit.aes = FALSE
+  xmin = start, xmax = end, y = molecule)) +
+  geom_gene_arrow(aes(fill=function_group)) +
+  geom_blank(data = dummies) +
   facet_wrap(~ molecule, scales = "free", ncol = 1) +
   scale_fill_brewer(palette = "Paired") +
   theme_genes() +
@@ -201,8 +210,7 @@ ggplot(genes_simulados, aes(
     y = "Plásmido"
   )
 ```
-
-**Clave:** `geom_blank(data = dummies, inherit.aes = FALSE)` extiende los rangos sin heredar aesthetics del `ggplot()` principal. Si omites `inherit.aes = FALSE`, buscará `function_group` en `dummies` y fallará.
+**¡CLAVE!:** `El parámetro estético fill=funtion_group` se añade dentro de los parámetros estéticos `aes()` de `geom_gene_arrow()` y no en los de `ggplot()` ¿Por qué? Por que cuando `geom_blank()` hereda los parámetros estéticos de ggplot() encuentra a fill=function_group y no lo reconoce, generando un error.  
 
 ## Etiquetado de genes
 
@@ -302,11 +310,9 @@ example_genes <- example_genes %>%
 
 # imagen completa
 ggplot(example_genes, aes(
-  xmin = start, xmax = end, y = molecule,
-  fill = gene, forward = forward
-)) +
-  geom_gene_arrow() + # flechas
-  geom_blank(data = dummies_genE, inherit.aes = FALSE) + # alineado
+  xmin = start, xmax = end, y = molecule)) +
+  geom_gene_arrow(aes(fill=gene, forward=forward)) + # flechas
+  geom_blank(data = dummies_genE) + # alineado
   geom_text( # etiquetas de genes
     aes(x = (start + end) / 2, label = gene),
     size = 2, color = "black", check_overlap = TRUE

@@ -73,7 +73,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <link href="index_files/libs/quarto-html/quarto-syntax-highlighting-15634bcf2e68342d4ad2dfa704d543f6.css" rel="stylesheet" id="quarto-text-highlighting-styles">
 <script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
 <link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="index_files/libs/bootstrap/bootstrap-5ed19b232ab0b663225b276819dba287.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<link href="index_files/libs/bootstrap/bootstrap-19216fa8bb71272e13fc45993650fab3.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 
 
 </head>
@@ -301,7 +301,8 @@ Figure&nbsp;2: Plásmidos bacterianos simulados
 </section>
 <section id="alineamiento-de-genes" class="level2" data-number="1.3">
 <h2 data-number="1.3" class="anchored" data-anchor-id="alineamiento-de-genes"><span class="header-section-number">1.3</span> Alineamiento de genes</h2>
-<p><code>make_alignment_dummies()</code> alinea un gen de referencia verticalmente entre moléculas. Se usa con <code>geom_blank()</code> para forzar las posiciones nuevas:</p>
+<p><code>make_alignment_dummies()</code> alinea un gen de referencia verticalmente entre moléculas. Se usa con <code>geom_blank()</code> para forzar las posiciones nuevas.</p>
+<p>Al crear el objeto “dummies” con los genes de referencia es importante considerar que podrían haber más de un gen con el mismo nombre en cada genoma. Si es así es mejor quedarse con una sóla de las copias:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>dummies <span class="ot">&lt;-</span> <span class="fu">make_alignment_dummies</span>(</span>
 <span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  genes_simulados,</span>
@@ -309,19 +310,26 @@ Figure&nbsp;2: Plásmidos bacterianos simulados
 <span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">on =</span> <span class="st">"blaCTX-M"</span></span>
 <span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>)</span>
 <span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(genes_simulados, <span class="fu">aes</span>(</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">fill =</span> function_group</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies, <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span>  <span class="co"># IMPORTANTE: inherit.aes = FALSE</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Alineamiento del gen blaCTX-M"</span>,</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Plásmido"</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Nos quedamos con una sóla copia del gen blaCTX-M por genoma</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>dummies<span class="ot">&lt;-</span>dummies <span class="sc">%&gt;%</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(molecule) <span class="sc">%&gt;%</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>() <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="co">#Pasar la asthetic 'fill' de la función ggplot a geom_gene_arrow</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co">#Elimina un conflicto con la graficación de los dummies (que no tienen fill)</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(genes_simulados, <span class="fu">aes</span>(</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule)) <span class="sc">+</span></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>(<span class="fu">aes</span>(<span class="at">fill=</span>function_group)) <span class="sc">+</span></span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies) <span class="sc">+</span></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Alineamiento del gen blaCTX-M"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Plásmido"</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-alineamiento" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
@@ -335,7 +343,7 @@ Figure&nbsp;3: Alineamiento del gen blaCTX-M
 </div>
 </div>
 </div>
-<p><strong>Clave:</strong> <code>geom_blank(data = dummies, inherit.aes = FALSE)</code> extiende los rangos sin heredar aesthetics del <code>ggplot()</code> principal. Si omites <code>inherit.aes = FALSE</code>, buscará <code>function_group</code> en <code>dummies</code> y fallará.</p>
+<p><strong>¡CLAVE!:</strong> <code>El parámetro estético fill=funtion_group</code> se añade dentro de los parámetros estéticos <code>aes()</code> de <code>geom_gene_arrow()</code> y no en los de <code>ggplot()</code> ¿Por qué? Por que cuando <code>geom_blank()</code> hereda los parámetros estéticos de ggplot() encuentra a fill=function_group y no lo reconoce, generando un error.</p>
 </section>
 <section id="etiquetado-de-genes" class="level2" data-number="1.4">
 <h2 data-number="1.4" class="anchored" data-anchor-id="etiquetado-de-genes"><span class="header-section-number">1.4</span> Etiquetado de genes</h2>
@@ -440,28 +448,26 @@ Figure&nbsp;5: Control de dirección con forward
 <span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a><span class="co"># imagen completa</span></span>
 <span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(example_genes, <span class="fu">aes</span>(</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule,</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill =</span> gene, <span class="at">forward =</span> forward</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span> <span class="co"># flechas</span></span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies_genE, <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="co"># alineado</span></span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>( <span class="co"># etiquetas de genes</span></span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> (start <span class="sc">+</span> end) <span class="sc">/</span> <span class="dv">2</span>, <span class="at">label =</span> gene),</span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">check_overlap =</span> <span class="cn">TRUE</span></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="co"># separado en filas</span></span>
-<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set3"</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="co"># colores</span></span>
-<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
-<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()</span>
-<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Mapa comparativo de genes"</span>,</span>
-<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
-<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="cn">NULL</span></span>
-<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule)) <span class="sc">+</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>(<span class="fu">aes</span>(<span class="at">fill=</span>gene, <span class="at">forward=</span>forward)) <span class="sc">+</span> <span class="co"># flechas</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies_genE) <span class="sc">+</span> <span class="co"># alineado</span></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>( <span class="co"># etiquetas de genes</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> (start <span class="sc">+</span> end) <span class="sc">/</span> <span class="dv">2</span>, <span class="at">label =</span> gene),</span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">check_overlap =</span> <span class="cn">TRUE</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="co"># separado en filas</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set3"</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="co"># colores</span></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Mapa comparativo de genes"</span>,</span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="cn">NULL</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output-display">
 <div id="fig-completo-gggenes" class="quarto-float quarto-figure quarto-figure-center anchored">
 <figure class="quarto-float quarto-float-fig figure">
@@ -1611,556 +1617,562 @@ Figure&nbsp;13: Personalización de colores
 <span id="cb32-179"><a href="#cb32-179" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb32-180"><a href="#cb32-180" aria-hidden="true" tabindex="-1"></a><span class="fu">## Alineamiento de genes</span></span>
 <span id="cb32-181"><a href="#cb32-181" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-182"><a href="#cb32-182" aria-hidden="true" tabindex="-1"></a><span class="in">`make_alignment_dummies()`</span> alinea un gen de referencia verticalmente entre moléculas. Se usa con <span class="in">`geom_blank()`</span> para forzar las posiciones nuevas:</span>
+<span id="cb32-182"><a href="#cb32-182" aria-hidden="true" tabindex="-1"></a><span class="in">`make_alignment_dummies()`</span> alinea un gen de referencia verticalmente entre moléculas. Se usa con <span class="in">`geom_blank()`</span> para forzar las posiciones nuevas. </span>
 <span id="cb32-183"><a href="#cb32-183" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-186"><a href="#cb32-186" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-187"><a href="#cb32-187" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-alineamiento</span></span>
-<span id="cb32-188"><a href="#cb32-188" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Alineamiento del gen blaCTX-M"</span></span>
-<span id="cb32-189"><a href="#cb32-189" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 10</span></span>
-<span id="cb32-190"><a href="#cb32-190" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
-<span id="cb32-191"><a href="#cb32-191" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-192"><a href="#cb32-192" aria-hidden="true" tabindex="-1"></a>dummies <span class="ot">&lt;-</span> <span class="fu">make_alignment_dummies</span>(</span>
-<span id="cb32-193"><a href="#cb32-193" aria-hidden="true" tabindex="-1"></a>  genes_simulados,</span>
-<span id="cb32-194"><a href="#cb32-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">id =</span> gene),</span>
-<span id="cb32-195"><a href="#cb32-195" aria-hidden="true" tabindex="-1"></a>  <span class="at">on =</span> <span class="st">"blaCTX-M"</span></span>
-<span id="cb32-196"><a href="#cb32-196" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb32-197"><a href="#cb32-197" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-198"><a href="#cb32-198" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(genes_simulados, <span class="fu">aes</span>(</span>
-<span id="cb32-199"><a href="#cb32-199" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">fill =</span> function_group</span>
-<span id="cb32-200"><a href="#cb32-200" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb32-201"><a href="#cb32-201" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
-<span id="cb32-202"><a href="#cb32-202" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies, <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span>  <span class="co"># IMPORTANTE: inherit.aes = FALSE</span></span>
-<span id="cb32-203"><a href="#cb32-203" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb32-204"><a href="#cb32-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
-<span id="cb32-205"><a href="#cb32-205" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
-<span id="cb32-206"><a href="#cb32-206" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb32-207"><a href="#cb32-207" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Alineamiento del gen blaCTX-M"</span>,</span>
-<span id="cb32-208"><a href="#cb32-208" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
-<span id="cb32-209"><a href="#cb32-209" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Plásmido"</span></span>
-<span id="cb32-210"><a href="#cb32-210" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb32-211"><a href="#cb32-211" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-212"><a href="#cb32-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-213"><a href="#cb32-213" aria-hidden="true" tabindex="-1"></a>**Clave:** <span class="in">`geom_blank(data = dummies, inherit.aes = FALSE)`</span> extiende los rangos sin heredar aesthetics del <span class="in">`ggplot()`</span> principal. Si omites <span class="in">`inherit.aes = FALSE`</span>, buscará <span class="in">`function_group`</span> en <span class="in">`dummies`</span> y fallará.</span>
-<span id="cb32-214"><a href="#cb32-214" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-215"><a href="#cb32-215" aria-hidden="true" tabindex="-1"></a><span class="fu">## Etiquetado de genes</span></span>
-<span id="cb32-216"><a href="#cb32-216" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-217"><a href="#cb32-217" aria-hidden="true" tabindex="-1"></a>Para poner nombres dentro de las flechas usamos <span class="in">`geom_text()`</span>:</span>
-<span id="cb32-218"><a href="#cb32-218" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-221"><a href="#cb32-221" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-222"><a href="#cb32-222" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-etiquetado</span></span>
-<span id="cb32-223"><a href="#cb32-223" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Etiquetado de genes"</span></span>
-<span id="cb32-224"><a href="#cb32-224" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 11</span></span>
-<span id="cb32-225"><a href="#cb32-225" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb32-184"><a href="#cb32-184" aria-hidden="true" tabindex="-1"></a>Al crear el objeto "dummies" con los genes de referencia es importante considerar que podrían haber más de un gen con el mismo nombre en cada genoma. Si es así es mejor quedarse con una sóla de las copias:</span>
+<span id="cb32-185"><a href="#cb32-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-188"><a href="#cb32-188" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-189"><a href="#cb32-189" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-alineamiento</span></span>
+<span id="cb32-190"><a href="#cb32-190" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Alineamiento del gen blaCTX-M"</span></span>
+<span id="cb32-191"><a href="#cb32-191" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 10</span></span>
+<span id="cb32-192"><a href="#cb32-192" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
+<span id="cb32-193"><a href="#cb32-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-194"><a href="#cb32-194" aria-hidden="true" tabindex="-1"></a>dummies <span class="ot">&lt;-</span> <span class="fu">make_alignment_dummies</span>(</span>
+<span id="cb32-195"><a href="#cb32-195" aria-hidden="true" tabindex="-1"></a>  genes_simulados,</span>
+<span id="cb32-196"><a href="#cb32-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">id =</span> gene),</span>
+<span id="cb32-197"><a href="#cb32-197" aria-hidden="true" tabindex="-1"></a>  <span class="at">on =</span> <span class="st">"blaCTX-M"</span></span>
+<span id="cb32-198"><a href="#cb32-198" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-199"><a href="#cb32-199" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-200"><a href="#cb32-200" aria-hidden="true" tabindex="-1"></a><span class="co">#Nos quedamos con una sóla copia del gen blaCTX-M por genoma</span></span>
+<span id="cb32-201"><a href="#cb32-201" aria-hidden="true" tabindex="-1"></a>dummies<span class="ot">&lt;-</span>dummies <span class="sc">%&gt;%</span></span>
+<span id="cb32-202"><a href="#cb32-202" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(molecule) <span class="sc">%&gt;%</span></span>
+<span id="cb32-203"><a href="#cb32-203" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">row_number</span>() <span class="sc">==</span> <span class="dv">1</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-204"><a href="#cb32-204" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ungroup</span>() <span class="sc">%&gt;%</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb32-205"><a href="#cb32-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-206"><a href="#cb32-206" aria-hidden="true" tabindex="-1"></a><span class="co">#Pasar la asthetic 'fill' de la función ggplot a geom_gene_arrow</span></span>
+<span id="cb32-207"><a href="#cb32-207" aria-hidden="true" tabindex="-1"></a><span class="co">#Elimina un conflicto con la graficación de los dummies (que no tienen fill)</span></span>
+<span id="cb32-208"><a href="#cb32-208" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(genes_simulados, <span class="fu">aes</span>(</span>
+<span id="cb32-209"><a href="#cb32-209" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule)) <span class="sc">+</span></span>
+<span id="cb32-210"><a href="#cb32-210" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>(<span class="fu">aes</span>(<span class="at">fill=</span>function_group)) <span class="sc">+</span></span>
+<span id="cb32-211"><a href="#cb32-211" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies) <span class="sc">+</span></span>
+<span id="cb32-212"><a href="#cb32-212" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb32-213"><a href="#cb32-213" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
+<span id="cb32-214"><a href="#cb32-214" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
+<span id="cb32-215"><a href="#cb32-215" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb32-216"><a href="#cb32-216" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Alineamiento del gen blaCTX-M"</span>,</span>
+<span id="cb32-217"><a href="#cb32-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
+<span id="cb32-218"><a href="#cb32-218" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Plásmido"</span></span>
+<span id="cb32-219"><a href="#cb32-219" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-220"><a href="#cb32-220" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-221"><a href="#cb32-221" aria-hidden="true" tabindex="-1"></a>**¡CLAVE!:** <span class="in">`El parámetro estético fill=funtion_group`</span> se añade dentro de los parámetros estéticos <span class="in">`aes()`</span> de <span class="in">`geom_gene_arrow()`</span> y no en los de <span class="in">`ggplot()`</span> ¿Por qué? Por que cuando <span class="in">`geom_blank()`</span> hereda los parámetros estéticos de ggplot() encuentra a fill=function_group y no lo reconoce, generando un error.  </span>
+<span id="cb32-222"><a href="#cb32-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-223"><a href="#cb32-223" aria-hidden="true" tabindex="-1"></a><span class="fu">## Etiquetado de genes</span></span>
+<span id="cb32-224"><a href="#cb32-224" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-225"><a href="#cb32-225" aria-hidden="true" tabindex="-1"></a>Para poner nombres dentro de las flechas usamos <span class="in">`geom_text()`</span>:</span>
 <span id="cb32-226"><a href="#cb32-226" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-227"><a href="#cb32-227" aria-hidden="true" tabindex="-1"></a><span class="co"># solo genes largos para tener etiquetas claras</span></span>
-<span id="cb32-228"><a href="#cb32-228" aria-hidden="true" tabindex="-1"></a>genes_largos <span class="ot">&lt;-</span> genes_simulados <span class="sc">%&gt;%</span></span>
-<span id="cb32-229"><a href="#cb32-229" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">longitud =</span> end <span class="sc">-</span> start) <span class="sc">%&gt;%</span></span>
-<span id="cb32-230"><a href="#cb32-230" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(longitud <span class="sc">&gt;</span> <span class="dv">1000</span>)</span>
-<span id="cb32-231"><a href="#cb32-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-232"><a href="#cb32-232" aria-hidden="true" tabindex="-1"></a><span class="co"># graficar</span></span>
-<span id="cb32-233"><a href="#cb32-233" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(genes_largos, <span class="fu">aes</span>(</span>
-<span id="cb32-234"><a href="#cb32-234" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">fill =</span> function_group</span>
-<span id="cb32-235"><a href="#cb32-235" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb32-236"><a href="#cb32-236" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
-<span id="cb32-237"><a href="#cb32-237" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
-<span id="cb32-238"><a href="#cb32-238" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> (start <span class="sc">+</span> end) <span class="sc">/</span> <span class="dv">2</span>, <span class="at">label =</span> gene),</span>
-<span id="cb32-239"><a href="#cb32-239" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">2.5</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>,</span>
-<span id="cb32-240"><a href="#cb32-240" aria-hidden="true" tabindex="-1"></a>    <span class="at">check_overlap =</span> <span class="cn">TRUE</span></span>
-<span id="cb32-241"><a href="#cb32-241" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-242"><a href="#cb32-242" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb32-243"><a href="#cb32-243" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
-<span id="cb32-244"><a href="#cb32-244" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
-<span id="cb32-245"><a href="#cb32-245" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb32-246"><a href="#cb32-246" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Etiquetado de genes"</span>,</span>
-<span id="cb32-247"><a href="#cb32-247" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
-<span id="cb32-248"><a href="#cb32-248" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Plásmido"</span></span>
-<span id="cb32-249"><a href="#cb32-249" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb32-250"><a href="#cb32-250" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-251"><a href="#cb32-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-252"><a href="#cb32-252" aria-hidden="true" tabindex="-1"></a>**Tip:** <span class="in">`check_overlap = TRUE`</span> evita que las etiquetas se encimen.</span>
-<span id="cb32-253"><a href="#cb32-253" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-254"><a href="#cb32-254" aria-hidden="true" tabindex="-1"></a><span class="fu">## Dirección de genes</span></span>
-<span id="cb32-255"><a href="#cb32-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-256"><a href="#cb32-256" aria-hidden="true" tabindex="-1"></a>El aesthetic <span class="in">`forward`</span> controla la dirección independientemente de las coordenadas:</span>
-<span id="cb32-257"><a href="#cb32-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-260"><a href="#cb32-260" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-261"><a href="#cb32-261" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-direccion</span></span>
-<span id="cb32-262"><a href="#cb32-262" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Control de dirección con forward"</span></span>
-<span id="cb32-263"><a href="#cb32-263" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 10</span></span>
-<span id="cb32-264"><a href="#cb32-264" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb32-229"><a href="#cb32-229" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-230"><a href="#cb32-230" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-etiquetado</span></span>
+<span id="cb32-231"><a href="#cb32-231" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Etiquetado de genes"</span></span>
+<span id="cb32-232"><a href="#cb32-232" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 11</span></span>
+<span id="cb32-233"><a href="#cb32-233" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb32-234"><a href="#cb32-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-235"><a href="#cb32-235" aria-hidden="true" tabindex="-1"></a><span class="co"># solo genes largos para tener etiquetas claras</span></span>
+<span id="cb32-236"><a href="#cb32-236" aria-hidden="true" tabindex="-1"></a>genes_largos <span class="ot">&lt;-</span> genes_simulados <span class="sc">%&gt;%</span></span>
+<span id="cb32-237"><a href="#cb32-237" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">longitud =</span> end <span class="sc">-</span> start) <span class="sc">%&gt;%</span></span>
+<span id="cb32-238"><a href="#cb32-238" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(longitud <span class="sc">&gt;</span> <span class="dv">1000</span>)</span>
+<span id="cb32-239"><a href="#cb32-239" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-240"><a href="#cb32-240" aria-hidden="true" tabindex="-1"></a><span class="co"># graficar</span></span>
+<span id="cb32-241"><a href="#cb32-241" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(genes_largos, <span class="fu">aes</span>(</span>
+<span id="cb32-242"><a href="#cb32-242" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">fill =</span> function_group</span>
+<span id="cb32-243"><a href="#cb32-243" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
+<span id="cb32-244"><a href="#cb32-244" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
+<span id="cb32-245"><a href="#cb32-245" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>(</span>
+<span id="cb32-246"><a href="#cb32-246" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> (start <span class="sc">+</span> end) <span class="sc">/</span> <span class="dv">2</span>, <span class="at">label =</span> gene),</span>
+<span id="cb32-247"><a href="#cb32-247" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="fl">2.5</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>,</span>
+<span id="cb32-248"><a href="#cb32-248" aria-hidden="true" tabindex="-1"></a>    <span class="at">check_overlap =</span> <span class="cn">TRUE</span></span>
+<span id="cb32-249"><a href="#cb32-249" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-250"><a href="#cb32-250" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb32-251"><a href="#cb32-251" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
+<span id="cb32-252"><a href="#cb32-252" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
+<span id="cb32-253"><a href="#cb32-253" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb32-254"><a href="#cb32-254" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Etiquetado de genes"</span>,</span>
+<span id="cb32-255"><a href="#cb32-255" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
+<span id="cb32-256"><a href="#cb32-256" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="st">"Plásmido"</span></span>
+<span id="cb32-257"><a href="#cb32-257" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-258"><a href="#cb32-258" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-259"><a href="#cb32-259" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-260"><a href="#cb32-260" aria-hidden="true" tabindex="-1"></a>**Tip:** <span class="in">`check_overlap = TRUE`</span> evita que las etiquetas se encimen.</span>
+<span id="cb32-261"><a href="#cb32-261" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-262"><a href="#cb32-262" aria-hidden="true" tabindex="-1"></a><span class="fu">## Dirección de genes</span></span>
+<span id="cb32-263"><a href="#cb32-263" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-264"><a href="#cb32-264" aria-hidden="true" tabindex="-1"></a>El aesthetic <span class="in">`forward`</span> controla la dirección independientemente de las coordenadas:</span>
 <span id="cb32-265"><a href="#cb32-265" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-266"><a href="#cb32-266" aria-hidden="true" tabindex="-1"></a>genes_dir <span class="ot">&lt;-</span> genes_simulados <span class="sc">%&gt;%</span></span>
-<span id="cb32-267"><a href="#cb32-267" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">forward =</span> <span class="fu">ifelse</span>(strand <span class="sc">==</span> <span class="st">"+"</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>))</span>
-<span id="cb32-268"><a href="#cb32-268" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-269"><a href="#cb32-269" aria-hidden="true" tabindex="-1"></a><span class="co"># gráfica sin forward</span></span>
-<span id="cb32-270"><a href="#cb32-270" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(genes_dir, <span class="fu">aes</span>(</span>
-<span id="cb32-271"><a href="#cb32-271" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">fill =</span> function_group</span>
-<span id="cb32-272"><a href="#cb32-272" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb32-273"><a href="#cb32-273" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
-<span id="cb32-274"><a href="#cb32-274" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb32-275"><a href="#cb32-275" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
-<span id="cb32-276"><a href="#cb32-276" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
-<span id="cb32-277"><a href="#cb32-277" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Sin forward (dirección por coordenadas)"</span>)</span>
-<span id="cb32-278"><a href="#cb32-278" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-279"><a href="#cb32-279" aria-hidden="true" tabindex="-1"></a><span class="co"># gráfica con forward</span></span>
-<span id="cb32-280"><a href="#cb32-280" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(genes_dir, <span class="fu">aes</span>(</span>
-<span id="cb32-281"><a href="#cb32-281" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, </span>
-<span id="cb32-282"><a href="#cb32-282" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill =</span> function_group, <span class="at">forward =</span> forward</span>
-<span id="cb32-283"><a href="#cb32-283" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb32-284"><a href="#cb32-284" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
-<span id="cb32-285"><a href="#cb32-285" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
-<span id="cb32-286"><a href="#cb32-286" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
-<span id="cb32-287"><a href="#cb32-287" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
-<span id="cb32-288"><a href="#cb32-288" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Con forward (dirección explícita)"</span>)</span>
-<span id="cb32-289"><a href="#cb32-289" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-290"><a href="#cb32-290" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
-<span id="cb32-291"><a href="#cb32-291" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">/</span> p2</span>
-<span id="cb32-292"><a href="#cb32-292" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-293"><a href="#cb32-293" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-294"><a href="#cb32-294" aria-hidden="true" tabindex="-1"></a><span class="fu">## Ejemplo completo</span></span>
-<span id="cb32-295"><a href="#cb32-295" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-296"><a href="#cb32-296" aria-hidden="true" tabindex="-1"></a>Integrando todo con distintas anotaciones:</span>
+<span id="cb32-268"><a href="#cb32-268" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-269"><a href="#cb32-269" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-direccion</span></span>
+<span id="cb32-270"><a href="#cb32-270" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Control de dirección con forward"</span></span>
+<span id="cb32-271"><a href="#cb32-271" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 10</span></span>
+<span id="cb32-272"><a href="#cb32-272" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb32-273"><a href="#cb32-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-274"><a href="#cb32-274" aria-hidden="true" tabindex="-1"></a>genes_dir <span class="ot">&lt;-</span> genes_simulados <span class="sc">%&gt;%</span></span>
+<span id="cb32-275"><a href="#cb32-275" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">forward =</span> <span class="fu">ifelse</span>(strand <span class="sc">==</span> <span class="st">"+"</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>))</span>
+<span id="cb32-276"><a href="#cb32-276" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-277"><a href="#cb32-277" aria-hidden="true" tabindex="-1"></a><span class="co"># gráfica sin forward</span></span>
+<span id="cb32-278"><a href="#cb32-278" aria-hidden="true" tabindex="-1"></a>p1 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(genes_dir, <span class="fu">aes</span>(</span>
+<span id="cb32-279"><a href="#cb32-279" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">fill =</span> function_group</span>
+<span id="cb32-280"><a href="#cb32-280" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
+<span id="cb32-281"><a href="#cb32-281" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
+<span id="cb32-282"><a href="#cb32-282" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb32-283"><a href="#cb32-283" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
+<span id="cb32-284"><a href="#cb32-284" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
+<span id="cb32-285"><a href="#cb32-285" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Sin forward (dirección por coordenadas)"</span>)</span>
+<span id="cb32-286"><a href="#cb32-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-287"><a href="#cb32-287" aria-hidden="true" tabindex="-1"></a><span class="co"># gráfica con forward</span></span>
+<span id="cb32-288"><a href="#cb32-288" aria-hidden="true" tabindex="-1"></a>p2 <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(genes_dir, <span class="fu">aes</span>(</span>
+<span id="cb32-289"><a href="#cb32-289" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, </span>
+<span id="cb32-290"><a href="#cb32-290" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill =</span> function_group, <span class="at">forward =</span> forward</span>
+<span id="cb32-291"><a href="#cb32-291" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
+<span id="cb32-292"><a href="#cb32-292" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span></span>
+<span id="cb32-293"><a href="#cb32-293" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span></span>
+<span id="cb32-294"><a href="#cb32-294" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Paired"</span>) <span class="sc">+</span></span>
+<span id="cb32-295"><a href="#cb32-295" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
+<span id="cb32-296"><a href="#cb32-296" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Con forward (dirección explícita)"</span>)</span>
 <span id="cb32-297"><a href="#cb32-297" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-300"><a href="#cb32-300" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-301"><a href="#cb32-301" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-completo-gggenes</span></span>
-<span id="cb32-302"><a href="#cb32-302" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Mapa completo con datos example_genes"</span></span>
-<span id="cb32-303"><a href="#cb32-303" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
-<span id="cb32-304"><a href="#cb32-304" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 8</span></span>
+<span id="cb32-298"><a href="#cb32-298" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(patchwork)</span>
+<span id="cb32-299"><a href="#cb32-299" aria-hidden="true" tabindex="-1"></a>p1 <span class="sc">/</span> p2</span>
+<span id="cb32-300"><a href="#cb32-300" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-301"><a href="#cb32-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-302"><a href="#cb32-302" aria-hidden="true" tabindex="-1"></a><span class="fu">## Ejemplo completo</span></span>
+<span id="cb32-303"><a href="#cb32-303" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-304"><a href="#cb32-304" aria-hidden="true" tabindex="-1"></a>Integrando todo con distintas anotaciones:</span>
 <span id="cb32-305"><a href="#cb32-305" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-306"><a href="#cb32-306" aria-hidden="true" tabindex="-1"></a><span class="co"># Alinear genE</span></span>
-<span id="cb32-307"><a href="#cb32-307" aria-hidden="true" tabindex="-1"></a>dummies_genE <span class="ot">&lt;-</span> <span class="fu">make_alignment_dummies</span>(</span>
-<span id="cb32-308"><a href="#cb32-308" aria-hidden="true" tabindex="-1"></a>  example_genes,</span>
-<span id="cb32-309"><a href="#cb32-309" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">id =</span> gene),</span>
-<span id="cb32-310"><a href="#cb32-310" aria-hidden="true" tabindex="-1"></a>  <span class="at">on =</span> <span class="st">"genE"</span></span>
-<span id="cb32-311"><a href="#cb32-311" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb32-312"><a href="#cb32-312" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-313"><a href="#cb32-313" aria-hidden="true" tabindex="-1"></a><span class="co"># agregar dirección</span></span>
-<span id="cb32-314"><a href="#cb32-314" aria-hidden="true" tabindex="-1"></a>example_genes <span class="ot">&lt;-</span> example_genes <span class="sc">%&gt;%</span></span>
-<span id="cb32-315"><a href="#cb32-315" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">forward =</span> <span class="fu">ifelse</span>(strand <span class="sc">==</span> <span class="st">"forward"</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>))</span>
-<span id="cb32-316"><a href="#cb32-316" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-317"><a href="#cb32-317" aria-hidden="true" tabindex="-1"></a><span class="co"># imagen completa</span></span>
-<span id="cb32-318"><a href="#cb32-318" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(example_genes, <span class="fu">aes</span>(</span>
-<span id="cb32-319"><a href="#cb32-319" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule,</span>
-<span id="cb32-320"><a href="#cb32-320" aria-hidden="true" tabindex="-1"></a>  <span class="at">fill =</span> gene, <span class="at">forward =</span> forward</span>
-<span id="cb32-321"><a href="#cb32-321" aria-hidden="true" tabindex="-1"></a>)) <span class="sc">+</span></span>
-<span id="cb32-322"><a href="#cb32-322" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>() <span class="sc">+</span> <span class="co"># flechas</span></span>
-<span id="cb32-323"><a href="#cb32-323" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies_genE, <span class="at">inherit.aes =</span> <span class="cn">FALSE</span>) <span class="sc">+</span> <span class="co"># alineado</span></span>
-<span id="cb32-324"><a href="#cb32-324" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>( <span class="co"># etiquetas de genes</span></span>
-<span id="cb32-325"><a href="#cb32-325" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> (start <span class="sc">+</span> end) <span class="sc">/</span> <span class="dv">2</span>, <span class="at">label =</span> gene),</span>
-<span id="cb32-326"><a href="#cb32-326" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">check_overlap =</span> <span class="cn">TRUE</span></span>
-<span id="cb32-327"><a href="#cb32-327" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-328"><a href="#cb32-328" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="co"># separado en filas</span></span>
-<span id="cb32-329"><a href="#cb32-329" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set3"</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="co"># colores</span></span>
-<span id="cb32-330"><a href="#cb32-330" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
-<span id="cb32-331"><a href="#cb32-331" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb32-332"><a href="#cb32-332" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
-<span id="cb32-333"><a href="#cb32-333" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb32-334"><a href="#cb32-334" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()</span>
-<span id="cb32-335"><a href="#cb32-335" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-336"><a href="#cb32-336" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb32-337"><a href="#cb32-337" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Mapa comparativo de genes"</span>,</span>
-<span id="cb32-338"><a href="#cb32-338" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
-<span id="cb32-339"><a href="#cb32-339" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="cn">NULL</span></span>
-<span id="cb32-340"><a href="#cb32-340" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb32-341"><a href="#cb32-341" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-342"><a href="#cb32-342" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-343"><a href="#cb32-343" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
-<span id="cb32-344"><a href="#cb32-344" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-345"><a href="#cb32-345" aria-hidden="true" tabindex="-1"></a><span class="fu"># Parte II: gggenomes — Genómica Comparativa</span></span>
-<span id="cb32-346"><a href="#cb32-346" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-347"><a href="#cb32-347" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introducción</span></span>
+<span id="cb32-308"><a href="#cb32-308" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-309"><a href="#cb32-309" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-completo-gggenes</span></span>
+<span id="cb32-310"><a href="#cb32-310" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Mapa completo con datos example_genes"</span></span>
+<span id="cb32-311"><a href="#cb32-311" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
+<span id="cb32-312"><a href="#cb32-312" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 8</span></span>
+<span id="cb32-313"><a href="#cb32-313" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-314"><a href="#cb32-314" aria-hidden="true" tabindex="-1"></a><span class="co"># Alinear genE</span></span>
+<span id="cb32-315"><a href="#cb32-315" aria-hidden="true" tabindex="-1"></a>dummies_genE <span class="ot">&lt;-</span> <span class="fu">make_alignment_dummies</span>(</span>
+<span id="cb32-316"><a href="#cb32-316" aria-hidden="true" tabindex="-1"></a>  example_genes,</span>
+<span id="cb32-317"><a href="#cb32-317" aria-hidden="true" tabindex="-1"></a>  <span class="fu">aes</span>(<span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule, <span class="at">id =</span> gene),</span>
+<span id="cb32-318"><a href="#cb32-318" aria-hidden="true" tabindex="-1"></a>  <span class="at">on =</span> <span class="st">"genE"</span></span>
+<span id="cb32-319"><a href="#cb32-319" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-320"><a href="#cb32-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-321"><a href="#cb32-321" aria-hidden="true" tabindex="-1"></a><span class="co"># agregar dirección</span></span>
+<span id="cb32-322"><a href="#cb32-322" aria-hidden="true" tabindex="-1"></a>example_genes <span class="ot">&lt;-</span> example_genes <span class="sc">%&gt;%</span></span>
+<span id="cb32-323"><a href="#cb32-323" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">forward =</span> <span class="fu">ifelse</span>(strand <span class="sc">==</span> <span class="st">"forward"</span>, <span class="cn">TRUE</span>, <span class="cn">FALSE</span>))</span>
+<span id="cb32-324"><a href="#cb32-324" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-325"><a href="#cb32-325" aria-hidden="true" tabindex="-1"></a><span class="co"># imagen completa</span></span>
+<span id="cb32-326"><a href="#cb32-326" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(example_genes, <span class="fu">aes</span>(</span>
+<span id="cb32-327"><a href="#cb32-327" aria-hidden="true" tabindex="-1"></a>  <span class="at">xmin =</span> start, <span class="at">xmax =</span> end, <span class="at">y =</span> molecule)) <span class="sc">+</span></span>
+<span id="cb32-328"><a href="#cb32-328" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_arrow</span>(<span class="fu">aes</span>(<span class="at">fill=</span>gene, <span class="at">forward=</span>forward)) <span class="sc">+</span> <span class="co"># flechas</span></span>
+<span id="cb32-329"><a href="#cb32-329" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_blank</span>(<span class="at">data =</span> dummies_genE) <span class="sc">+</span> <span class="co"># alineado</span></span>
+<span id="cb32-330"><a href="#cb32-330" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_text</span>( <span class="co"># etiquetas de genes</span></span>
+<span id="cb32-331"><a href="#cb32-331" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">x =</span> (start <span class="sc">+</span> end) <span class="sc">/</span> <span class="dv">2</span>, <span class="at">label =</span> gene),</span>
+<span id="cb32-332"><a href="#cb32-332" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">2</span>, <span class="at">color =</span> <span class="st">"black"</span>, <span class="at">check_overlap =</span> <span class="cn">TRUE</span></span>
+<span id="cb32-333"><a href="#cb32-333" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-334"><a href="#cb32-334" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span> molecule, <span class="at">scales =</span> <span class="st">"free"</span>, <span class="at">ncol =</span> <span class="dv">1</span>) <span class="sc">+</span> <span class="co"># separado en filas</span></span>
+<span id="cb32-335"><a href="#cb32-335" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="at">palette =</span> <span class="st">"Set3"</span>, <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span> <span class="co"># colores</span></span>
+<span id="cb32-336"><a href="#cb32-336" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_genes</span>() <span class="sc">+</span></span>
+<span id="cb32-337"><a href="#cb32-337" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb32-338"><a href="#cb32-338" aria-hidden="true" tabindex="-1"></a>    <span class="at">strip.text =</span> <span class="fu">element_text</span>(<span class="at">face =</span> <span class="st">"bold"</span>),</span>
+<span id="cb32-339"><a href="#cb32-339" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb32-340"><a href="#cb32-340" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.ticks.y =</span> <span class="fu">element_blank</span>()</span>
+<span id="cb32-341"><a href="#cb32-341" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-342"><a href="#cb32-342" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb32-343"><a href="#cb32-343" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Mapa comparativo de genes"</span>,</span>
+<span id="cb32-344"><a href="#cb32-344" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span>,</span>
+<span id="cb32-345"><a href="#cb32-345" aria-hidden="true" tabindex="-1"></a>    <span class="at">y =</span> <span class="cn">NULL</span></span>
+<span id="cb32-346"><a href="#cb32-346" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-347"><a href="#cb32-347" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb32-348"><a href="#cb32-348" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-349"><a href="#cb32-349" aria-hidden="true" tabindex="-1"></a>En vez de un solo data frame, <span class="in">`gggenomes`</span> usa **tracks** que pueden ser a su vez data frames para enriquecer las gráficas:</span>
+<span id="cb32-349"><a href="#cb32-349" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
 <span id="cb32-350"><a href="#cb32-350" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-351"><a href="#cb32-351" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`seqs`**: Secuencias (líneas horizontales)</span>
-<span id="cb32-352"><a href="#cb32-352" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`genes`/`feats`**: Características (flechas)</span>
-<span id="cb32-353"><a href="#cb32-353" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`links`**: Conexiones entre secuencias (sintenia)</span>
+<span id="cb32-351"><a href="#cb32-351" aria-hidden="true" tabindex="-1"></a><span class="fu"># Parte II: gggenomes — Genómica Comparativa</span></span>
+<span id="cb32-352"><a href="#cb32-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-353"><a href="#cb32-353" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introducción</span></span>
 <span id="cb32-354"><a href="#cb32-354" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-355"><a href="#cb32-355" aria-hidden="true" tabindex="-1"></a><span class="fu">## Primer gráfico</span></span>
+<span id="cb32-355"><a href="#cb32-355" aria-hidden="true" tabindex="-1"></a>En vez de un solo data frame, <span class="in">`gggenomes`</span> usa **tracks** que pueden ser a su vez data frames para enriquecer las gráficas:</span>
 <span id="cb32-356"><a href="#cb32-356" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-357"><a href="#cb32-357" aria-hidden="true" tabindex="-1"></a>Usamos los datos <span class="in">`emale_*`</span> incluidos en el paquete:</span>
-<span id="cb32-358"><a href="#cb32-358" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-361"><a href="#cb32-361" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-362"><a href="#cb32-362" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-primer-gggenomes</span></span>
-<span id="cb32-363"><a href="#cb32-363" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Primer gráfico con gggenomes"</span></span>
-<span id="cb32-364"><a href="#cb32-364" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
-<span id="cb32-365"><a href="#cb32-365" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
-<span id="cb32-366"><a href="#cb32-366" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-367"><a href="#cb32-367" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gggenomes)</span>
-<span id="cb32-368"><a href="#cb32-368" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-369"><a href="#cb32-369" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_seqs)</span>
-<span id="cb32-370"><a href="#cb32-370" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_genes)</span>
-<span id="cb32-371"><a href="#cb32-371" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-372"><a href="#cb32-372" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">genes =</span> emale_genes, <span class="at">seqs =</span> emale_seqs) <span class="sc">+</span></span>
-<span id="cb32-373"><a href="#cb32-373" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-374"><a href="#cb32-374" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
-<span id="cb32-375"><a href="#cb32-375" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
-<span id="cb32-376"><a href="#cb32-376" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
-<span id="cb32-377"><a href="#cb32-377" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>),</span>
-<span id="cb32-378"><a href="#cb32-378" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Hebra"</span></span>
-<span id="cb32-379"><a href="#cb32-379" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-380"><a href="#cb32-380" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb32-381"><a href="#cb32-381" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Genomas de virofagos EMALEs"</span>,</span>
-<span id="cb32-382"><a href="#cb32-382" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span></span>
-<span id="cb32-383"><a href="#cb32-383" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb32-384"><a href="#cb32-384" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-385"><a href="#cb32-385" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-386"><a href="#cb32-386" aria-hidden="true" tabindex="-1"></a>**Notas:**</span>
-<span id="cb32-387"><a href="#cb32-387" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb32-388"><a href="#cb32-388" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`geom_seq()`</span> dibuja las líneas horizontales que fungen como guías.</span>
-<span id="cb32-389"><a href="#cb32-389" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb32-390"><a href="#cb32-390" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`geom_bin_label()`</span> pone los nombres de las secuencias (a la izquierda por defecto).</span>
-<span id="cb32-391"><a href="#cb32-391" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb32-392"><a href="#cb32-392" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`position = "strand"`</span> separa genes en <span class="in">`+`</span> (arriba) y <span class="in">`-`</span> (abajo).</span>
+<span id="cb32-357"><a href="#cb32-357" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`seqs`**: Secuencias (líneas horizontales)</span>
+<span id="cb32-358"><a href="#cb32-358" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`genes`/`feats`**: Características (flechas)</span>
+<span id="cb32-359"><a href="#cb32-359" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>**`links`**: Conexiones entre secuencias (sintenia)</span>
+<span id="cb32-360"><a href="#cb32-360" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-361"><a href="#cb32-361" aria-hidden="true" tabindex="-1"></a><span class="fu">## Primer gráfico</span></span>
+<span id="cb32-362"><a href="#cb32-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-363"><a href="#cb32-363" aria-hidden="true" tabindex="-1"></a>Usamos los datos <span class="in">`emale_*`</span> incluidos en el paquete:</span>
+<span id="cb32-364"><a href="#cb32-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-367"><a href="#cb32-367" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-368"><a href="#cb32-368" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-primer-gggenomes</span></span>
+<span id="cb32-369"><a href="#cb32-369" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Primer gráfico con gggenomes"</span></span>
+<span id="cb32-370"><a href="#cb32-370" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
+<span id="cb32-371"><a href="#cb32-371" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb32-372"><a href="#cb32-372" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-373"><a href="#cb32-373" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gggenomes)</span>
+<span id="cb32-374"><a href="#cb32-374" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-375"><a href="#cb32-375" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_seqs)</span>
+<span id="cb32-376"><a href="#cb32-376" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_genes)</span>
+<span id="cb32-377"><a href="#cb32-377" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-378"><a href="#cb32-378" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">genes =</span> emale_genes, <span class="at">seqs =</span> emale_seqs) <span class="sc">+</span></span>
+<span id="cb32-379"><a href="#cb32-379" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-380"><a href="#cb32-380" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
+<span id="cb32-381"><a href="#cb32-381" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
+<span id="cb32-382"><a href="#cb32-382" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(</span>
+<span id="cb32-383"><a href="#cb32-383" aria-hidden="true" tabindex="-1"></a>    <span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>),</span>
+<span id="cb32-384"><a href="#cb32-384" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="st">"Hebra"</span></span>
+<span id="cb32-385"><a href="#cb32-385" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-386"><a href="#cb32-386" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb32-387"><a href="#cb32-387" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Genomas de virofagos EMALEs"</span>,</span>
+<span id="cb32-388"><a href="#cb32-388" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span></span>
+<span id="cb32-389"><a href="#cb32-389" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-390"><a href="#cb32-390" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-391"><a href="#cb32-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-392"><a href="#cb32-392" aria-hidden="true" tabindex="-1"></a>**Notas:**</span>
 <span id="cb32-393"><a href="#cb32-393" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb32-394"><a href="#cb32-394" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>La separación de secuencias en filas es automática. No requerimos a <span class="in">`facet_wrap()`</span>.</span>
-<span id="cb32-395"><a href="#cb32-395" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-396"><a href="#cb32-396" aria-hidden="true" tabindex="-1"></a><span class="fu">## Múltiples tracks</span></span>
-<span id="cb32-397"><a href="#cb32-397" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-398"><a href="#cb32-398" aria-hidden="true" tabindex="-1"></a>Añadimos TIRs y transposones:</span>
-<span id="cb32-399"><a href="#cb32-399" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-402"><a href="#cb32-402" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-403"><a href="#cb32-403" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-multiples-tracks</span></span>
-<span id="cb32-404"><a href="#cb32-404" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Múltiples tracks: genes, TIRs y transposones"</span></span>
-<span id="cb32-405"><a href="#cb32-405" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
-<span id="cb32-406"><a href="#cb32-406" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 7</span></span>
-<span id="cb32-407"><a href="#cb32-407" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-408"><a href="#cb32-408" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_tirs)</span>
-<span id="cb32-409"><a href="#cb32-409" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-410"><a href="#cb32-410" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_ngaros)</span>
-<span id="cb32-411"><a href="#cb32-411" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-412"><a href="#cb32-412" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
-<span id="cb32-413"><a href="#cb32-413" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes,</span>
-<span id="cb32-414"><a href="#cb32-414" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
-<span id="cb32-415"><a href="#cb32-415" aria-hidden="true" tabindex="-1"></a>  <span class="at">feats =</span> <span class="fu">list</span>(emale_tirs, <span class="at">ngaros =</span> emale_ngaros)</span>
-<span id="cb32-416"><a href="#cb32-416" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
-<span id="cb32-417"><a href="#cb32-417" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-418"><a href="#cb32-418" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
-<span id="cb32-419"><a href="#cb32-419" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
-<span id="cb32-420"><a href="#cb32-420" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(<span class="at">linewidth =</span> <span class="dv">8</span>, <span class="at">color =</span> <span class="st">"darkgoldenrod4"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
-<span id="cb32-421"><a href="#cb32-421" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(</span>
-<span id="cb32-422"><a href="#cb32-422" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">feats</span>(ngaros), </span>
-<span id="cb32-423"><a href="#cb32-423" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"turquoise4"</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">linewidth =</span> <span class="dv">16</span></span>
-<span id="cb32-424"><a href="#cb32-424" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-425"><a href="#cb32-425" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
-<span id="cb32-426"><a href="#cb32-426" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Múltiples tracks de características"</span>)</span>
-<span id="cb32-427"><a href="#cb32-427" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-428"><a href="#cb32-428" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-429"><a href="#cb32-429" aria-hidden="true" tabindex="-1"></a>**Acceso a tracks:**</span>
-<span id="cb32-430"><a href="#cb32-430" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb32-431"><a href="#cb32-431" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`feats()`</span> = usa el primer track (no-genes) por defecto. <span class="in">`geom_feat()`</span> llama por defecto a <span class="in">`feats()`</span>.</span>
-<span id="cb32-432"><a href="#cb32-432" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb32-433"><a href="#cb32-433" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`feats("ngaros")`</span> = llama a un track por su nombre</span>
-<span id="cb32-434"><a href="#cb32-434" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
-<span id="cb32-435"><a href="#cb32-435" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`genes()`</span> = solo CDSs</span>
-<span id="cb32-436"><a href="#cb32-436" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-437"><a href="#cb32-437" aria-hidden="true" tabindex="-1"></a><span class="fu">## Enlaces y sintenia</span></span>
-<span id="cb32-438"><a href="#cb32-438" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-441"><a href="#cb32-441" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-442"><a href="#cb32-442" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sintenia</span></span>
-<span id="cb32-443"><a href="#cb32-443" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Sintenia entre genomas virales"</span></span>
-<span id="cb32-444"><a href="#cb32-444" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
-<span id="cb32-445"><a href="#cb32-445" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 7</span></span>
-<span id="cb32-446"><a href="#cb32-446" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-447"><a href="#cb32-447" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_ava)</span>
-<span id="cb32-448"><a href="#cb32-448" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-449"><a href="#cb32-449" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
-<span id="cb32-450"><a href="#cb32-450" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes,</span>
-<span id="cb32-451"><a href="#cb32-451" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
-<span id="cb32-452"><a href="#cb32-452" aria-hidden="true" tabindex="-1"></a>  <span class="at">links =</span> emale_ava</span>
-<span id="cb32-453"><a href="#cb32-453" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
-<span id="cb32-454"><a href="#cb32-454" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">offset =</span> <span class="fl">0.15</span>) <span class="sc">+</span></span>
-<span id="cb32-455"><a href="#cb32-455" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-456"><a href="#cb32-456" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
-<span id="cb32-457"><a href="#cb32-457" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
-<span id="cb32-458"><a href="#cb32-458" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
-<span id="cb32-459"><a href="#cb32-459" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Sintenia entre EMALEs"</span>)</span>
-<span id="cb32-460"><a href="#cb32-460" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-461"><a href="#cb32-461" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-462"><a href="#cb32-462" aria-hidden="true" tabindex="-1"></a><span class="in">`offset = 0.15`</span> separa los enlaces de las secuencias para que no se encimen y sea más fácil ver qué enlace es de qué secuencia.</span>
-<span id="cb32-463"><a href="#cb32-463" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-464"><a href="#cb32-464" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sincronización con sync()</span></span>
-<span id="cb32-465"><a href="#cb32-465" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-466"><a href="#cb32-466" aria-hidden="true" tabindex="-1"></a><span class="in">`sync()`</span> invierte automáticamente las secuencias enteras que sea necesario para mejorar la lectura minimizando los cruces entre enlaces:</span>
+<span id="cb32-394"><a href="#cb32-394" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`geom_seq()`</span> dibuja las líneas horizontales que fungen como guías.</span>
+<span id="cb32-395"><a href="#cb32-395" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
+<span id="cb32-396"><a href="#cb32-396" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`geom_bin_label()`</span> pone los nombres de las secuencias (a la izquierda por defecto).</span>
+<span id="cb32-397"><a href="#cb32-397" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
+<span id="cb32-398"><a href="#cb32-398" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`position = "strand"`</span> separa genes en <span class="in">`+`</span> (arriba) y <span class="in">`-`</span> (abajo).</span>
+<span id="cb32-399"><a href="#cb32-399" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
+<span id="cb32-400"><a href="#cb32-400" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>La separación de secuencias en filas es automática. No requerimos a <span class="in">`facet_wrap()`</span>.</span>
+<span id="cb32-401"><a href="#cb32-401" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-402"><a href="#cb32-402" aria-hidden="true" tabindex="-1"></a><span class="fu">## Múltiples tracks</span></span>
+<span id="cb32-403"><a href="#cb32-403" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-404"><a href="#cb32-404" aria-hidden="true" tabindex="-1"></a>Añadimos TIRs y transposones:</span>
+<span id="cb32-405"><a href="#cb32-405" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-408"><a href="#cb32-408" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-409"><a href="#cb32-409" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-multiples-tracks</span></span>
+<span id="cb32-410"><a href="#cb32-410" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Múltiples tracks: genes, TIRs y transposones"</span></span>
+<span id="cb32-411"><a href="#cb32-411" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
+<span id="cb32-412"><a href="#cb32-412" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 7</span></span>
+<span id="cb32-413"><a href="#cb32-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-414"><a href="#cb32-414" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_tirs)</span>
+<span id="cb32-415"><a href="#cb32-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-416"><a href="#cb32-416" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_ngaros)</span>
+<span id="cb32-417"><a href="#cb32-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-418"><a href="#cb32-418" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
+<span id="cb32-419"><a href="#cb32-419" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes,</span>
+<span id="cb32-420"><a href="#cb32-420" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
+<span id="cb32-421"><a href="#cb32-421" aria-hidden="true" tabindex="-1"></a>  <span class="at">feats =</span> <span class="fu">list</span>(emale_tirs, <span class="at">ngaros =</span> emale_ngaros)</span>
+<span id="cb32-422"><a href="#cb32-422" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb32-423"><a href="#cb32-423" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-424"><a href="#cb32-424" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
+<span id="cb32-425"><a href="#cb32-425" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
+<span id="cb32-426"><a href="#cb32-426" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(<span class="at">linewidth =</span> <span class="dv">8</span>, <span class="at">color =</span> <span class="st">"darkgoldenrod4"</span>, <span class="at">alpha =</span> <span class="fl">0.7</span>) <span class="sc">+</span></span>
+<span id="cb32-427"><a href="#cb32-427" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(</span>
+<span id="cb32-428"><a href="#cb32-428" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">feats</span>(ngaros), </span>
+<span id="cb32-429"><a href="#cb32-429" aria-hidden="true" tabindex="-1"></a>    <span class="at">color =</span> <span class="st">"turquoise4"</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">linewidth =</span> <span class="dv">16</span></span>
+<span id="cb32-430"><a href="#cb32-430" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-431"><a href="#cb32-431" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
+<span id="cb32-432"><a href="#cb32-432" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Múltiples tracks de características"</span>)</span>
+<span id="cb32-433"><a href="#cb32-433" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-434"><a href="#cb32-434" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-435"><a href="#cb32-435" aria-hidden="true" tabindex="-1"></a>**Acceso a tracks:**</span>
+<span id="cb32-436"><a href="#cb32-436" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
+<span id="cb32-437"><a href="#cb32-437" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`feats()`</span> = usa el primer track (no-genes) por defecto. <span class="in">`geom_feat()`</span> llama por defecto a <span class="in">`feats()`</span>.</span>
+<span id="cb32-438"><a href="#cb32-438" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
+<span id="cb32-439"><a href="#cb32-439" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`feats("ngaros")`</span> = llama a un track por su nombre</span>
+<span id="cb32-440"><a href="#cb32-440" aria-hidden="true" tabindex="-1"></a><span class="dt">&lt;</span><span class="kw">br</span><span class="dt">&gt;</span></span>
+<span id="cb32-441"><a href="#cb32-441" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span><span class="in">`genes()`</span> = solo CDSs</span>
+<span id="cb32-442"><a href="#cb32-442" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-443"><a href="#cb32-443" aria-hidden="true" tabindex="-1"></a><span class="fu">## Enlaces y sintenia</span></span>
+<span id="cb32-444"><a href="#cb32-444" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-447"><a href="#cb32-447" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-448"><a href="#cb32-448" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sintenia</span></span>
+<span id="cb32-449"><a href="#cb32-449" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Sintenia entre genomas virales"</span></span>
+<span id="cb32-450"><a href="#cb32-450" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
+<span id="cb32-451"><a href="#cb32-451" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 7</span></span>
+<span id="cb32-452"><a href="#cb32-452" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-453"><a href="#cb32-453" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(emale_ava)</span>
+<span id="cb32-454"><a href="#cb32-454" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-455"><a href="#cb32-455" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
+<span id="cb32-456"><a href="#cb32-456" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes,</span>
+<span id="cb32-457"><a href="#cb32-457" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
+<span id="cb32-458"><a href="#cb32-458" aria-hidden="true" tabindex="-1"></a>  <span class="at">links =</span> emale_ava</span>
+<span id="cb32-459"><a href="#cb32-459" aria-hidden="true" tabindex="-1"></a>) <span class="sc">+</span></span>
+<span id="cb32-460"><a href="#cb32-460" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">offset =</span> <span class="fl">0.15</span>) <span class="sc">+</span></span>
+<span id="cb32-461"><a href="#cb32-461" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-462"><a href="#cb32-462" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
+<span id="cb32-463"><a href="#cb32-463" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
+<span id="cb32-464"><a href="#cb32-464" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
+<span id="cb32-465"><a href="#cb32-465" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Sintenia entre EMALEs"</span>)</span>
+<span id="cb32-466"><a href="#cb32-466" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb32-467"><a href="#cb32-467" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-470"><a href="#cb32-470" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-471"><a href="#cb32-471" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sync</span></span>
-<span id="cb32-472"><a href="#cb32-472" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Genomas sincronizados con sync()"</span></span>
-<span id="cb32-473"><a href="#cb32-473" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
-<span id="cb32-474"><a href="#cb32-474" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 7</span></span>
-<span id="cb32-475"><a href="#cb32-475" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-476"><a href="#cb32-476" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
-<span id="cb32-477"><a href="#cb32-477" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes,</span>
-<span id="cb32-478"><a href="#cb32-478" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
-<span id="cb32-479"><a href="#cb32-479" aria-hidden="true" tabindex="-1"></a>  <span class="at">links =</span> emale_ava</span>
-<span id="cb32-480"><a href="#cb32-480" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-481"><a href="#cb32-481" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sync</span>() <span class="sc">+</span></span>
-<span id="cb32-482"><a href="#cb32-482" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">offset =</span> <span class="fl">0.15</span>, <span class="at">color =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
-<span id="cb32-483"><a href="#cb32-483" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-484"><a href="#cb32-484" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
-<span id="cb32-485"><a href="#cb32-485" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
-<span id="cb32-486"><a href="#cb32-486" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
-<span id="cb32-487"><a href="#cb32-487" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Después de sync()"</span>)</span>
-<span id="cb32-488"><a href="#cb32-488" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-489"><a href="#cb32-489" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-490"><a href="#cb32-490" aria-hidden="true" tabindex="-1"></a><span class="fu">## Zoom con focus()</span></span>
-<span id="cb32-491"><a href="#cb32-491" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-494"><a href="#cb32-494" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-495"><a href="#cb32-495" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-zoom</span></span>
-<span id="cb32-496"><a href="#cb32-496" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Zoom en el gen MCP"</span></span>
-<span id="cb32-497"><a href="#cb32-497" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
-<span id="cb32-498"><a href="#cb32-498" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
-<span id="cb32-499"><a href="#cb32-499" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-500"><a href="#cb32-500" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">genes =</span> emale_genes, <span class="at">seqs =</span> emale_seqs) <span class="sc">%&gt;%</span></span>
-<span id="cb32-501"><a href="#cb32-501" aria-hidden="true" tabindex="-1"></a>  <span class="fu">focus</span>(name <span class="sc">==</span> <span class="st">"MCP"</span>, <span class="at">.expand =</span> <span class="dv">2000</span>) <span class="sc">+</span></span>
-<span id="cb32-502"><a href="#cb32-502" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-503"><a href="#cb32-503" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
-<span id="cb32-504"><a href="#cb32-504" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> name <span class="sc">==</span> <span class="st">"MCP"</span>), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
-<span id="cb32-505"><a href="#cb32-505" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_tag</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">check_overlap =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
-<span id="cb32-506"><a href="#cb32-506" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"TRUE"</span> <span class="ot">=</span> <span class="st">"red"</span>, <span class="st">"FALSE"</span> <span class="ot">=</span> <span class="st">"gray60"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb32-507"><a href="#cb32-507" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Zoom en MCP (+/- 2000 bp)"</span>)</span>
-<span id="cb32-508"><a href="#cb32-508" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-509"><a href="#cb32-509" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-510"><a href="#cb32-510" aria-hidden="true" tabindex="-1"></a><span class="in">`.expand = 2000`</span> muestra 2000 bp a cada lado del gen MCP para dar contexto.</span>
-<span id="cb32-511"><a href="#cb32-511" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-512"><a href="#cb32-512" aria-hidden="true" tabindex="-1"></a><span class="fu">## Ejemplo completo</span></span>
-<span id="cb32-513"><a href="#cb32-513" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-514"><a href="#cb32-514" aria-hidden="true" tabindex="-1"></a>Gráfico avanzado con todos los elementos:</span>
+<span id="cb32-468"><a href="#cb32-468" aria-hidden="true" tabindex="-1"></a><span class="in">`offset = 0.15`</span> separa los enlaces de las secuencias para que no se encimen y sea más fácil ver qué enlace es de qué secuencia.</span>
+<span id="cb32-469"><a href="#cb32-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-470"><a href="#cb32-470" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sincronización con sync()</span></span>
+<span id="cb32-471"><a href="#cb32-471" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-472"><a href="#cb32-472" aria-hidden="true" tabindex="-1"></a><span class="in">`sync()`</span> invierte automáticamente las secuencias enteras que sea necesario para mejorar la lectura minimizando los cruces entre enlaces:</span>
+<span id="cb32-473"><a href="#cb32-473" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-476"><a href="#cb32-476" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-477"><a href="#cb32-477" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-sync</span></span>
+<span id="cb32-478"><a href="#cb32-478" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Genomas sincronizados con sync()"</span></span>
+<span id="cb32-479"><a href="#cb32-479" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
+<span id="cb32-480"><a href="#cb32-480" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 7</span></span>
+<span id="cb32-481"><a href="#cb32-481" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-482"><a href="#cb32-482" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
+<span id="cb32-483"><a href="#cb32-483" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes,</span>
+<span id="cb32-484"><a href="#cb32-484" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
+<span id="cb32-485"><a href="#cb32-485" aria-hidden="true" tabindex="-1"></a>  <span class="at">links =</span> emale_ava</span>
+<span id="cb32-486"><a href="#cb32-486" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-487"><a href="#cb32-487" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sync</span>() <span class="sc">+</span></span>
+<span id="cb32-488"><a href="#cb32-488" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">offset =</span> <span class="fl">0.15</span>, <span class="at">color =</span> <span class="st">"white"</span>) <span class="sc">+</span></span>
+<span id="cb32-489"><a href="#cb32-489" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-490"><a href="#cb32-490" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
+<span id="cb32-491"><a href="#cb32-491" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
+<span id="cb32-492"><a href="#cb32-492" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
+<span id="cb32-493"><a href="#cb32-493" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Después de sync()"</span>)</span>
+<span id="cb32-494"><a href="#cb32-494" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-495"><a href="#cb32-495" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-496"><a href="#cb32-496" aria-hidden="true" tabindex="-1"></a><span class="fu">## Zoom con focus()</span></span>
+<span id="cb32-497"><a href="#cb32-497" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-500"><a href="#cb32-500" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-501"><a href="#cb32-501" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-zoom</span></span>
+<span id="cb32-502"><a href="#cb32-502" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Zoom en el gen MCP"</span></span>
+<span id="cb32-503"><a href="#cb32-503" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
+<span id="cb32-504"><a href="#cb32-504" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 5</span></span>
+<span id="cb32-505"><a href="#cb32-505" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-506"><a href="#cb32-506" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">genes =</span> emale_genes, <span class="at">seqs =</span> emale_seqs) <span class="sc">%&gt;%</span></span>
+<span id="cb32-507"><a href="#cb32-507" aria-hidden="true" tabindex="-1"></a>  <span class="fu">focus</span>(name <span class="sc">==</span> <span class="st">"MCP"</span>, <span class="at">.expand =</span> <span class="dv">2000</span>) <span class="sc">+</span></span>
+<span id="cb32-508"><a href="#cb32-508" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-509"><a href="#cb32-509" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
+<span id="cb32-510"><a href="#cb32-510" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> name <span class="sc">==</span> <span class="st">"MCP"</span>), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
+<span id="cb32-511"><a href="#cb32-511" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_tag</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">check_overlap =</span> <span class="cn">TRUE</span>) <span class="sc">+</span></span>
+<span id="cb32-512"><a href="#cb32-512" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"TRUE"</span> <span class="ot">=</span> <span class="st">"red"</span>, <span class="st">"FALSE"</span> <span class="ot">=</span> <span class="st">"gray60"</span>), <span class="at">guide =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
+<span id="cb32-513"><a href="#cb32-513" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Zoom en MCP (+/- 2000 bp)"</span>)</span>
+<span id="cb32-514"><a href="#cb32-514" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb32-515"><a href="#cb32-515" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-518"><a href="#cb32-518" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-519"><a href="#cb32-519" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-completo-gggenomes</span></span>
-<span id="cb32-520"><a href="#cb32-520" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Gráfico completo EMALEs con COGs, TIRs, Ngaros y GC"</span></span>
-<span id="cb32-521"><a href="#cb32-521" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 14</span></span>
-<span id="cb32-522"><a href="#cb32-522" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 8</span></span>
-<span id="cb32-523"><a href="#cb32-523" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-524"><a href="#cb32-524" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
-<span id="cb32-525"><a href="#cb32-525" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes, </span>
-<span id="cb32-526"><a href="#cb32-526" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
-<span id="cb32-527"><a href="#cb32-527" aria-hidden="true" tabindex="-1"></a>  <span class="at">feats =</span> <span class="fu">list</span>(emale_tirs, <span class="at">ngaros =</span> emale_ngaros, <span class="at">gc =</span> emale_gc)</span>
-<span id="cb32-528"><a href="#cb32-528" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-529"><a href="#cb32-529" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_sublinks</span>(emale_prot_ava) <span class="sc">%&gt;%</span></span>
-<span id="cb32-530"><a href="#cb32-530" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_clusters</span>(emale_cogs) <span class="sc">%&gt;%</span></span>
-<span id="cb32-531"><a href="#cb32-531" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sync</span>() <span class="sc">+</span></span>
-<span id="cb32-532"><a href="#cb32-532" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">data =</span> <span class="fu">links</span>(<span class="dv">2</span>), <span class="at">offset =</span> <span class="fl">0.15</span>, <span class="at">color =</span> <span class="st">"white"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
-<span id="cb32-533"><a href="#cb32-533" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-534"><a href="#cb32-534" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>(<span class="at">size =</span> <span class="dv">4</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
-<span id="cb32-535"><a href="#cb32-535" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(<span class="at">linewidth =</span> <span class="dv">6</span>, <span class="at">color =</span> <span class="st">"thistle4"</span>) <span class="sc">+</span></span>
-<span id="cb32-536"><a href="#cb32-536" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(<span class="at">data =</span> <span class="fu">feats</span>(ngaros), <span class="at">color =</span> <span class="st">"turquoise4"</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">linewidth =</span> <span class="dv">16</span>) <span class="sc">+</span></span>
-<span id="cb32-537"><a href="#cb32-537" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(</span>
-<span id="cb32-538"><a href="#cb32-538" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(cluster_id), <span class="cn">NA</span>, </span>
-<span id="cb32-539"><a href="#cb32-539" aria-hidden="true" tabindex="-1"></a>                        stringr<span class="sc">::</span><span class="fu">str_glue</span>(<span class="st">"{cluster_id} [{cluster_size}]"</span>))),</span>
-<span id="cb32-540"><a href="#cb32-540" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="st">"strand"</span></span>
-<span id="cb32-541"><a href="#cb32-541" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-542"><a href="#cb32-542" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_tag</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">nudge_y =</span> <span class="fl">0.1</span>, <span class="at">check_overlap =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span></span>
-<span id="cb32-543"><a href="#cb32-543" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_wiggle</span>(</span>
-<span id="cb32-544"><a href="#cb32-544" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">z =</span> score, <span class="at">linetype =</span> <span class="st">"GC"</span>), </span>
-<span id="cb32-545"><a href="#cb32-545" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">feats</span>(gc),</span>
-<span id="cb32-546"><a href="#cb32-546" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"lavenderblush4"</span>, </span>
-<span id="cb32-547"><a href="#cb32-547" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_nudge</span>(<span class="at">y =</span> <span class="sc">-</span><span class="fl">0.2</span>), </span>
-<span id="cb32-548"><a href="#cb32-548" aria-hidden="true" tabindex="-1"></a>    <span class="at">height =</span> <span class="fl">0.2</span></span>
-<span id="cb32-549"><a href="#cb32-549" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-550"><a href="#cb32-550" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="st">"COGs"</span>, <span class="at">palette =</span> <span class="st">"Dark2"</span>, <span class="at">na.value =</span> <span class="st">"cornsilk3"</span>) <span class="sc">+</span></span>
-<span id="cb32-551"><a href="#cb32-551" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb32-552"><a href="#cb32-552" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
-<span id="cb32-553"><a href="#cb32-553" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Arquitectura genómica de EMALEs"</span>,</span>
-<span id="cb32-554"><a href="#cb32-554" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span></span>
-<span id="cb32-555"><a href="#cb32-555" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb32-556"><a href="#cb32-556" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-557"><a href="#cb32-557" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-558"><a href="#cb32-558" aria-hidden="true" tabindex="-1"></a><span class="in">`geom_wiggle()`</span> agrega información para secuencias especificadas en un <span class="in">`feat`</span>; en este caso, tramos de secuencias que no se ilustran como genes por su contenido de GC. La información aparece como barras en torno a la mediana, a su vez en el eje de la secuencia.</span>
-<span id="cb32-559"><a href="#cb32-559" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-560"><a href="#cb32-560" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
-<span id="cb32-561"><a href="#cb32-561" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-562"><a href="#cb32-562" aria-hidden="true" tabindex="-1"></a><span class="fu"># Parte III: Personalización</span></span>
+<span id="cb32-516"><a href="#cb32-516" aria-hidden="true" tabindex="-1"></a><span class="in">`.expand = 2000`</span> muestra 2000 bp a cada lado del gen MCP para dar contexto.</span>
+<span id="cb32-517"><a href="#cb32-517" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-518"><a href="#cb32-518" aria-hidden="true" tabindex="-1"></a><span class="fu">## Ejemplo completo</span></span>
+<span id="cb32-519"><a href="#cb32-519" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-520"><a href="#cb32-520" aria-hidden="true" tabindex="-1"></a>Gráfico avanzado con todos los elementos:</span>
+<span id="cb32-521"><a href="#cb32-521" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-524"><a href="#cb32-524" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-525"><a href="#cb32-525" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-completo-gggenomes</span></span>
+<span id="cb32-526"><a href="#cb32-526" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Gráfico completo EMALEs con COGs, TIRs, Ngaros y GC"</span></span>
+<span id="cb32-527"><a href="#cb32-527" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 14</span></span>
+<span id="cb32-528"><a href="#cb32-528" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 8</span></span>
+<span id="cb32-529"><a href="#cb32-529" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-530"><a href="#cb32-530" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(</span>
+<span id="cb32-531"><a href="#cb32-531" aria-hidden="true" tabindex="-1"></a>  <span class="at">genes =</span> emale_genes, </span>
+<span id="cb32-532"><a href="#cb32-532" aria-hidden="true" tabindex="-1"></a>  <span class="at">seqs =</span> emale_seqs,</span>
+<span id="cb32-533"><a href="#cb32-533" aria-hidden="true" tabindex="-1"></a>  <span class="at">feats =</span> <span class="fu">list</span>(emale_tirs, <span class="at">ngaros =</span> emale_ngaros, <span class="at">gc =</span> emale_gc)</span>
+<span id="cb32-534"><a href="#cb32-534" aria-hidden="true" tabindex="-1"></a>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-535"><a href="#cb32-535" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_sublinks</span>(emale_prot_ava) <span class="sc">%&gt;%</span></span>
+<span id="cb32-536"><a href="#cb32-536" aria-hidden="true" tabindex="-1"></a>  <span class="fu">add_clusters</span>(emale_cogs) <span class="sc">%&gt;%</span></span>
+<span id="cb32-537"><a href="#cb32-537" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sync</span>() <span class="sc">+</span></span>
+<span id="cb32-538"><a href="#cb32-538" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">data =</span> <span class="fu">links</span>(<span class="dv">2</span>), <span class="at">offset =</span> <span class="fl">0.15</span>, <span class="at">color =</span> <span class="st">"white"</span>, <span class="at">alpha =</span> <span class="fl">0.6</span>) <span class="sc">+</span></span>
+<span id="cb32-539"><a href="#cb32-539" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-540"><a href="#cb32-540" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>(<span class="at">size =</span> <span class="dv">4</span>, <span class="at">fontface =</span> <span class="st">"bold"</span>) <span class="sc">+</span></span>
+<span id="cb32-541"><a href="#cb32-541" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(<span class="at">linewidth =</span> <span class="dv">6</span>, <span class="at">color =</span> <span class="st">"thistle4"</span>) <span class="sc">+</span></span>
+<span id="cb32-542"><a href="#cb32-542" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_feat</span>(<span class="at">data =</span> <span class="fu">feats</span>(ngaros), <span class="at">color =</span> <span class="st">"turquoise4"</span>, <span class="at">alpha =</span> <span class="fl">0.3</span>, <span class="at">linewidth =</span> <span class="dv">16</span>) <span class="sc">+</span></span>
+<span id="cb32-543"><a href="#cb32-543" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(</span>
+<span id="cb32-544"><a href="#cb32-544" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">fill =</span> <span class="fu">ifelse</span>(<span class="fu">is.na</span>(cluster_id), <span class="cn">NA</span>, </span>
+<span id="cb32-545"><a href="#cb32-545" aria-hidden="true" tabindex="-1"></a>                        stringr<span class="sc">::</span><span class="fu">str_glue</span>(<span class="st">"{cluster_id} [{cluster_size}]"</span>))),</span>
+<span id="cb32-546"><a href="#cb32-546" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="st">"strand"</span></span>
+<span id="cb32-547"><a href="#cb32-547" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-548"><a href="#cb32-548" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene_tag</span>(<span class="fu">aes</span>(<span class="at">label =</span> name), <span class="at">nudge_y =</span> <span class="fl">0.1</span>, <span class="at">check_overlap =</span> <span class="cn">TRUE</span>, <span class="at">size =</span> <span class="fl">2.5</span>) <span class="sc">+</span></span>
+<span id="cb32-549"><a href="#cb32-549" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_wiggle</span>(</span>
+<span id="cb32-550"><a href="#cb32-550" aria-hidden="true" tabindex="-1"></a>    <span class="fu">aes</span>(<span class="at">z =</span> score, <span class="at">linetype =</span> <span class="st">"GC"</span>), </span>
+<span id="cb32-551"><a href="#cb32-551" aria-hidden="true" tabindex="-1"></a>    <span class="at">data =</span> <span class="fu">feats</span>(gc),</span>
+<span id="cb32-552"><a href="#cb32-552" aria-hidden="true" tabindex="-1"></a>    <span class="at">fill =</span> <span class="st">"lavenderblush4"</span>, </span>
+<span id="cb32-553"><a href="#cb32-553" aria-hidden="true" tabindex="-1"></a>    <span class="at">position =</span> <span class="fu">position_nudge</span>(<span class="at">y =</span> <span class="sc">-</span><span class="fl">0.2</span>), </span>
+<span id="cb32-554"><a href="#cb32-554" aria-hidden="true" tabindex="-1"></a>    <span class="at">height =</span> <span class="fl">0.2</span></span>
+<span id="cb32-555"><a href="#cb32-555" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-556"><a href="#cb32-556" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_brewer</span>(<span class="st">"COGs"</span>, <span class="at">palette =</span> <span class="st">"Dark2"</span>, <span class="at">na.value =</span> <span class="st">"cornsilk3"</span>) <span class="sc">+</span></span>
+<span id="cb32-557"><a href="#cb32-557" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb32-558"><a href="#cb32-558" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(</span>
+<span id="cb32-559"><a href="#cb32-559" aria-hidden="true" tabindex="-1"></a>    <span class="at">title =</span> <span class="st">"Arquitectura genómica de EMALEs"</span>,</span>
+<span id="cb32-560"><a href="#cb32-560" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="st">"Posición (bp)"</span></span>
+<span id="cb32-561"><a href="#cb32-561" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-562"><a href="#cb32-562" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb32-563"><a href="#cb32-563" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-564"><a href="#cb32-564" aria-hidden="true" tabindex="-1"></a><span class="fu">## Colores y temas</span></span>
+<span id="cb32-564"><a href="#cb32-564" aria-hidden="true" tabindex="-1"></a><span class="in">`geom_wiggle()`</span> agrega información para secuencias especificadas en un <span class="in">`feat`</span>; en este caso, tramos de secuencias que no se ilustran como genes por su contenido de GC. La información aparece como barras en torno a la mediana, a su vez en el eje de la secuencia.</span>
 <span id="cb32-565"><a href="#cb32-565" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-568"><a href="#cb32-568" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-569"><a href="#cb32-569" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-personalizacion</span></span>
-<span id="cb32-570"><a href="#cb32-570" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Personalización de colores"</span></span>
-<span id="cb32-571"><a href="#cb32-571" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
-<span id="cb32-572"><a href="#cb32-572" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
-<span id="cb32-573"><a href="#cb32-573" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-574"><a href="#cb32-574" aria-hidden="true" tabindex="-1"></a>paleta <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
-<span id="cb32-575"><a href="#cb32-575" aria-hidden="true" tabindex="-1"></a>  <span class="st">"estructural"</span> <span class="ot">=</span> <span class="st">"#E41A1C"</span>, <span class="st">"enzima"</span> <span class="ot">=</span> <span class="st">"#377EB8"</span>,</span>
-<span id="cb32-576"><a href="#cb32-576" aria-hidden="true" tabindex="-1"></a>  <span class="st">"regulación"</span> <span class="ot">=</span> <span class="st">"#4DAF4A"</span>, <span class="st">"otra"</span> <span class="ot">=</span> <span class="st">"#999999"</span></span>
-<span id="cb32-577"><a href="#cb32-577" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb32-578"><a href="#cb32-578" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-579"><a href="#cb32-579" aria-hidden="true" tabindex="-1"></a><span class="co"># estructura de anotación que liga genes con su color</span></span>
-<span id="cb32-580"><a href="#cb32-580" aria-hidden="true" tabindex="-1"></a>emale_annot <span class="ot">&lt;-</span> emale_genes <span class="sc">%&gt;%</span></span>
-<span id="cb32-581"><a href="#cb32-581" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">funcion =</span> <span class="fu">case_when</span>(</span>
-<span id="cb32-582"><a href="#cb32-582" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(name, <span class="st">"MCP"</span>) <span class="sc">~</span> <span class="st">"estructural"</span>,</span>
-<span id="cb32-583"><a href="#cb32-583" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(name, <span class="st">"pol|hel"</span>) <span class="sc">~</span> <span class="st">"enzima"</span>,</span>
-<span id="cb32-584"><a href="#cb32-584" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(name, <span class="st">"reg"</span>) <span class="sc">~</span> <span class="st">"regulación"</span>,</span>
-<span id="cb32-585"><a href="#cb32-585" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"otra"</span></span>
-<span id="cb32-586"><a href="#cb32-586" aria-hidden="true" tabindex="-1"></a>  ))</span>
-<span id="cb32-587"><a href="#cb32-587" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-588"><a href="#cb32-588" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">genes =</span> emale_annot, <span class="at">seqs =</span> emale_seqs) <span class="sc">+</span></span>
-<span id="cb32-589"><a href="#cb32-589" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-590"><a href="#cb32-590" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
-<span id="cb32-591"><a href="#cb32-591" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> funcion), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
-<span id="cb32-592"><a href="#cb32-592" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> paleta, <span class="at">name =</span> <span class="st">"Función"</span>) <span class="sc">+</span></span>
-<span id="cb32-593"><a href="#cb32-593" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb32-594"><a href="#cb32-594" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Colores personalizados por función"</span>)</span>
-<span id="cb32-595"><a href="#cb32-595" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-596"><a href="#cb32-596" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-597"><a href="#cb32-597" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exportar figuras</span></span>
-<span id="cb32-598"><a href="#cb32-598" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-601"><a href="#cb32-601" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb32-602"><a href="#cb32-602" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: exportacion</span></span>
-<span id="cb32-603"><a href="#cb32-603" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb32-604"><a href="#cb32-604" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Código para exportar"</span></span>
-<span id="cb32-605"><a href="#cb32-605" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-606"><a href="#cb32-606" aria-hidden="true" tabindex="-1"></a><span class="co"># PNG (rápido, para web)</span></span>
-<span id="cb32-607"><a href="#cb32-607" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"figura.png"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">6</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
-<span id="cb32-608"><a href="#cb32-608" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-609"><a href="#cb32-609" aria-hidden="true" tabindex="-1"></a><span class="co"># PDF (vectorial, para publicaciones)</span></span>
-<span id="cb32-610"><a href="#cb32-610" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"figura.pdf"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
+<span id="cb32-566"><a href="#cb32-566" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
+<span id="cb32-567"><a href="#cb32-567" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-568"><a href="#cb32-568" aria-hidden="true" tabindex="-1"></a><span class="fu"># Parte III: Personalización</span></span>
+<span id="cb32-569"><a href="#cb32-569" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-570"><a href="#cb32-570" aria-hidden="true" tabindex="-1"></a><span class="fu">## Colores y temas</span></span>
+<span id="cb32-571"><a href="#cb32-571" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-574"><a href="#cb32-574" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-575"><a href="#cb32-575" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: fig-personalizacion</span></span>
+<span id="cb32-576"><a href="#cb32-576" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Personalización de colores"</span></span>
+<span id="cb32-577"><a href="#cb32-577" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 12</span></span>
+<span id="cb32-578"><a href="#cb32-578" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 6</span></span>
+<span id="cb32-579"><a href="#cb32-579" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-580"><a href="#cb32-580" aria-hidden="true" tabindex="-1"></a>paleta <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb32-581"><a href="#cb32-581" aria-hidden="true" tabindex="-1"></a>  <span class="st">"estructural"</span> <span class="ot">=</span> <span class="st">"#E41A1C"</span>, <span class="st">"enzima"</span> <span class="ot">=</span> <span class="st">"#377EB8"</span>,</span>
+<span id="cb32-582"><a href="#cb32-582" aria-hidden="true" tabindex="-1"></a>  <span class="st">"regulación"</span> <span class="ot">=</span> <span class="st">"#4DAF4A"</span>, <span class="st">"otra"</span> <span class="ot">=</span> <span class="st">"#999999"</span></span>
+<span id="cb32-583"><a href="#cb32-583" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-584"><a href="#cb32-584" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-585"><a href="#cb32-585" aria-hidden="true" tabindex="-1"></a><span class="co"># estructura de anotación que liga genes con su color</span></span>
+<span id="cb32-586"><a href="#cb32-586" aria-hidden="true" tabindex="-1"></a>emale_annot <span class="ot">&lt;-</span> emale_genes <span class="sc">%&gt;%</span></span>
+<span id="cb32-587"><a href="#cb32-587" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">funcion =</span> <span class="fu">case_when</span>(</span>
+<span id="cb32-588"><a href="#cb32-588" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(name, <span class="st">"MCP"</span>) <span class="sc">~</span> <span class="st">"estructural"</span>,</span>
+<span id="cb32-589"><a href="#cb32-589" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(name, <span class="st">"pol|hel"</span>) <span class="sc">~</span> <span class="st">"enzima"</span>,</span>
+<span id="cb32-590"><a href="#cb32-590" aria-hidden="true" tabindex="-1"></a>    <span class="fu">str_detect</span>(name, <span class="st">"reg"</span>) <span class="sc">~</span> <span class="st">"regulación"</span>,</span>
+<span id="cb32-591"><a href="#cb32-591" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> <span class="st">"otra"</span></span>
+<span id="cb32-592"><a href="#cb32-592" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb32-593"><a href="#cb32-593" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-594"><a href="#cb32-594" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">genes =</span> emale_annot, <span class="at">seqs =</span> emale_seqs) <span class="sc">+</span></span>
+<span id="cb32-595"><a href="#cb32-595" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-596"><a href="#cb32-596" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_bin_label</span>() <span class="sc">+</span></span>
+<span id="cb32-597"><a href="#cb32-597" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> funcion), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
+<span id="cb32-598"><a href="#cb32-598" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> paleta, <span class="at">name =</span> <span class="st">"Función"</span>) <span class="sc">+</span></span>
+<span id="cb32-599"><a href="#cb32-599" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb32-600"><a href="#cb32-600" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Colores personalizados por función"</span>)</span>
+<span id="cb32-601"><a href="#cb32-601" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-602"><a href="#cb32-602" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-603"><a href="#cb32-603" aria-hidden="true" tabindex="-1"></a><span class="fu">## Exportar figuras</span></span>
+<span id="cb32-604"><a href="#cb32-604" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-607"><a href="#cb32-607" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb32-608"><a href="#cb32-608" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: exportacion</span></span>
+<span id="cb32-609"><a href="#cb32-609" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb32-610"><a href="#cb32-610" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Código para exportar"</span></span>
 <span id="cb32-611"><a href="#cb32-611" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-612"><a href="#cb32-612" aria-hidden="true" tabindex="-1"></a><span class="co"># SVG (editable en Illustrator)</span></span>
-<span id="cb32-613"><a href="#cb32-613" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"figura.svg"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
-<span id="cb32-614"><a href="#cb32-614" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-615"><a href="#cb32-615" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-616"><a href="#cb32-616" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
+<span id="cb32-612"><a href="#cb32-612" aria-hidden="true" tabindex="-1"></a><span class="co"># PNG (rápido, para web)</span></span>
+<span id="cb32-613"><a href="#cb32-613" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"figura.png"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">6</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span>
+<span id="cb32-614"><a href="#cb32-614" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-615"><a href="#cb32-615" aria-hidden="true" tabindex="-1"></a><span class="co"># PDF (vectorial, para publicaciones)</span></span>
+<span id="cb32-616"><a href="#cb32-616" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"figura.pdf"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
 <span id="cb32-617"><a href="#cb32-617" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-618"><a href="#cb32-618" aria-hidden="true" tabindex="-1"></a><span class="fu"># Apéndice: De genomas .fna a gráfico de sintenia</span></span>
-<span id="cb32-619"><a href="#cb32-619" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-620"><a href="#cb32-620" aria-hidden="true" tabindex="-1"></a><span class="fu">## Anotación con Bakta</span></span>
+<span id="cb32-618"><a href="#cb32-618" aria-hidden="true" tabindex="-1"></a><span class="co"># SVG (editable en Illustrator)</span></span>
+<span id="cb32-619"><a href="#cb32-619" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(<span class="st">"figura.svg"</span>, <span class="at">width =</span> <span class="dv">10</span>, <span class="at">height =</span> <span class="dv">6</span>)</span>
+<span id="cb32-620"><a href="#cb32-620" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb32-621"><a href="#cb32-621" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-622"><a href="#cb32-622" aria-hidden="true" tabindex="-1"></a><span class="in">```{bash, eval=FALSE}</span></span>
-<span id="cb32-623"><a href="#cb32-623" aria-hidden="true" tabindex="-1"></a><span class="co"># Instalar</span></span>
-<span id="cb32-624"><a href="#cb32-624" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install <span class="at">-c</span> bioconda bakta</span>
+<span id="cb32-622"><a href="#cb32-622" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
+<span id="cb32-623"><a href="#cb32-623" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-624"><a href="#cb32-624" aria-hidden="true" tabindex="-1"></a><span class="fu"># Apéndice: De genomas .fna a gráfico de sintenia</span></span>
 <span id="cb32-625"><a href="#cb32-625" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-626"><a href="#cb32-626" aria-hidden="true" tabindex="-1"></a><span class="co"># Anotar</span></span>
-<span id="cb32-627"><a href="#cb32-627" aria-hidden="true" tabindex="-1"></a><span class="ex">bakta</span> <span class="at">--db</span> /path/to/db <span class="at">--output</span> results/bakta/genoma1 <span class="at">--prefix</span> genoma1 genoma1.fna</span>
-<span id="cb32-628"><a href="#cb32-628" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-629"><a href="#cb32-629" aria-hidden="true" tabindex="-1"></a><span class="co"># Salida clave: `genoma1.gff3` (coordenadas de genes).</span></span>
-<span id="cb32-630"><a href="#cb32-630" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-626"><a href="#cb32-626" aria-hidden="true" tabindex="-1"></a><span class="fu">## Anotación con Bakta</span></span>
+<span id="cb32-627"><a href="#cb32-627" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-628"><a href="#cb32-628" aria-hidden="true" tabindex="-1"></a><span class="in">```{bash, eval=FALSE}</span></span>
+<span id="cb32-629"><a href="#cb32-629" aria-hidden="true" tabindex="-1"></a><span class="co"># Instalar</span></span>
+<span id="cb32-630"><a href="#cb32-630" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install <span class="at">-c</span> bioconda bakta</span>
 <span id="cb32-631"><a href="#cb32-631" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-632"><a href="#cb32-632" aria-hidden="true" tabindex="-1"></a><span class="fu">## Alineamiento con minimap2</span></span>
-<span id="cb32-633"><a href="#cb32-633" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-634"><a href="#cb32-634" aria-hidden="true" tabindex="-1"></a><span class="in">```{bash, eval=FALSE}</span></span>
-<span id="cb32-635"><a href="#cb32-635" aria-hidden="true" tabindex="-1"></a><span class="co"># Instalar</span></span>
-<span id="cb32-636"><a href="#cb32-636" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install <span class="at">-c</span> bioconda minimap2</span>
+<span id="cb32-632"><a href="#cb32-632" aria-hidden="true" tabindex="-1"></a><span class="co"># Anotar</span></span>
+<span id="cb32-633"><a href="#cb32-633" aria-hidden="true" tabindex="-1"></a><span class="ex">bakta</span> <span class="at">--db</span> /path/to/db <span class="at">--output</span> results/bakta/genoma1 <span class="at">--prefix</span> genoma1 genoma1.fna</span>
+<span id="cb32-634"><a href="#cb32-634" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-635"><a href="#cb32-635" aria-hidden="true" tabindex="-1"></a><span class="co"># Salida clave: `genoma1.gff3` (coordenadas de genes).</span></span>
+<span id="cb32-636"><a href="#cb32-636" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb32-637"><a href="#cb32-637" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-638"><a href="#cb32-638" aria-hidden="true" tabindex="-1"></a><span class="co"># Alinear</span></span>
-<span id="cb32-639"><a href="#cb32-639" aria-hidden="true" tabindex="-1"></a><span class="ex">minimap2</span> <span class="at">-x</span> asm20 reference.fna query.fna <span class="op">&gt;</span> aln.paf</span>
-<span id="cb32-640"><a href="#cb32-640" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-641"><a href="#cb32-641" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-642"><a href="#cb32-642" aria-hidden="true" tabindex="-1"></a>Formato <span class="co">[</span><span class="ot">PAF</span><span class="co">](https://github.com/lh3/miniasm/blob/master/PAF.md)</span>: 12 columnas tabuladas con coordenadas de alineamiento. <span class="in">`minimap2`</span> fue la herramienta que <span class="co">[</span><span class="ot">popularizó este formato</span><span class="co">](https://doi.org/10.1093/bioinformatics/bty191)</span>, que agrega las coordenadas de los mapeos estimados <span class="co">[</span><span class="ot">sin necesitar un alineamiento base o el detalle que da CIGAR</span><span class="co">](https://github.com/lh3/minimap2#general)</span>.</span>
+<span id="cb32-638"><a href="#cb32-638" aria-hidden="true" tabindex="-1"></a><span class="fu">## Alineamiento con minimap2</span></span>
+<span id="cb32-639"><a href="#cb32-639" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-640"><a href="#cb32-640" aria-hidden="true" tabindex="-1"></a><span class="in">```{bash, eval=FALSE}</span></span>
+<span id="cb32-641"><a href="#cb32-641" aria-hidden="true" tabindex="-1"></a><span class="co"># Instalar</span></span>
+<span id="cb32-642"><a href="#cb32-642" aria-hidden="true" tabindex="-1"></a><span class="ex">conda</span> install <span class="at">-c</span> bioconda minimap2</span>
 <span id="cb32-643"><a href="#cb32-643" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-644"><a href="#cb32-644" aria-hidden="true" tabindex="-1"></a><span class="fu">## Leer datos en R</span></span>
-<span id="cb32-645"><a href="#cb32-645" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-646"><a href="#cb32-646" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=FALSE}</span></span>
-<span id="cb32-647"><a href="#cb32-647" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: leer-datos</span></span>
-<span id="cb32-648"><a href="#cb32-648" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
-<span id="cb32-649"><a href="#cb32-649" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Código para importar GFF3 y PAF"</span></span>
-<span id="cb32-650"><a href="#cb32-650" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-651"><a href="#cb32-651" aria-hidden="true" tabindex="-1"></a><span class="co"># Leer GFF3 de Bakta</span></span>
-<span id="cb32-652"><a href="#cb32-652" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb32-653"><a href="#cb32-653" aria-hidden="true" tabindex="-1"></a>genes <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">"genoma1.gff3"</span>, <span class="at">comment =</span> <span class="st">"#"</span>, <span class="at">col_names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-654"><a href="#cb32-654" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(<span class="fu">c</span>(<span class="st">"seq_id"</span>, <span class="st">"source"</span>, <span class="st">"type"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, </span>
-<span id="cb32-655"><a href="#cb32-655" aria-hidden="true" tabindex="-1"></a>             <span class="st">"score"</span>, <span class="st">"strand"</span>, <span class="st">"phase"</span>, <span class="st">"attributes"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb32-656"><a href="#cb32-656" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"CDS"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-657"><a href="#cb32-657" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb32-658"><a href="#cb32-658" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="fu">str_extract</span>(attributes, <span class="st">"Name=([^;]+)"</span>, <span class="at">group =</span> <span class="dv">1</span>),</span>
-<span id="cb32-659"><a href="#cb32-659" aria-hidden="true" tabindex="-1"></a>    <span class="at">product =</span> <span class="fu">str_extract</span>(attributes, <span class="st">"product=([^;]+)"</span>, <span class="at">group =</span> <span class="dv">1</span>)</span>
-<span id="cb32-660"><a href="#cb32-660" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb32-661"><a href="#cb32-661" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-662"><a href="#cb32-662" aria-hidden="true" tabindex="-1"></a><span class="co"># Leer PAF</span></span>
-<span id="cb32-663"><a href="#cb32-663" aria-hidden="true" tabindex="-1"></a>links <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">"aln.paf"</span>, <span class="at">col_names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb32-664"><a href="#cb32-664" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
-<span id="cb32-665"><a href="#cb32-665" aria-hidden="true" tabindex="-1"></a>    <span class="at">seq_id =</span> X1, <span class="at">start =</span> X3, <span class="at">end =</span> X4, <span class="at">strand =</span> X5,</span>
-<span id="cb32-666"><a href="#cb32-666" aria-hidden="true" tabindex="-1"></a>    <span class="at">seq_id2 =</span> X6, <span class="at">start2 =</span> X8, <span class="at">end2 =</span> X9,</span>
-<span id="cb32-667"><a href="#cb32-667" aria-hidden="true" tabindex="-1"></a>    <span class="at">map_match =</span> X10, <span class="at">map_length =</span> X11, <span class="at">map_quality =</span> X12</span>
-<span id="cb32-668"><a href="#cb32-668" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb32-669"><a href="#cb32-669" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-670"><a href="#cb32-670" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-671"><a href="#cb32-671" aria-hidden="true" tabindex="-1"></a><span class="fu">## Gráfico de sintenia final</span></span>
-<span id="cb32-672"><a href="#cb32-672" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-673"><a href="#cb32-673" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=TRUE}</span></span>
-<span id="cb32-674"><a href="#cb32-674" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Gráfico de sintenia entre plásmidos"</span></span>
-<span id="cb32-675"><a href="#cb32-675" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 14</span></span>
-<span id="cb32-676"><a href="#cb32-676" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 10</span></span>
-<span id="cb32-677"><a href="#cb32-677" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-678"><a href="#cb32-678" aria-hidden="true" tabindex="-1"></a><span class="co"># Datos simulados para demostración</span></span>
-<span id="cb32-679"><a href="#cb32-679" aria-hidden="true" tabindex="-1"></a>seqs_demo <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">seq_id =</span> <span class="fu">c</span>(<span class="st">"pCM5"</span>, <span class="st">"pCM6"</span>, <span class="st">"pCM4"</span>),</span>
-<span id="cb32-680"><a href="#cb32-680" aria-hidden="true" tabindex="-1"></a>  <span class="at">length =</span> <span class="fu">c</span>(<span class="dv">48895</span>, <span class="dv">50350</span>, <span class="dv">39958</span>)</span>
-<span id="cb32-681"><a href="#cb32-681" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb32-682"><a href="#cb32-682" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-683"><a href="#cb32-683" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
-<span id="cb32-684"><a href="#cb32-684" aria-hidden="true" tabindex="-1"></a>genes_demo <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
-<span id="cb32-685"><a href="#cb32-685" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> seqs_demo<span class="sc">$</span>seq_id) {</span>
-<span id="cb32-686"><a href="#cb32-686" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">30</span><span class="sc">:</span><span class="dv">50</span>, <span class="dv">1</span>)</span>
-<span id="cb32-687"><a href="#cb32-687" aria-hidden="true" tabindex="-1"></a>  pos <span class="ot">&lt;-</span> <span class="dv">100</span></span>
-<span id="cb32-688"><a href="#cb32-688" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
-<span id="cb32-689"><a href="#cb32-689" aria-hidden="true" tabindex="-1"></a>    len <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">400</span><span class="sc">:</span><span class="dv">1800</span>, <span class="dv">1</span>)</span>
-<span id="cb32-690"><a href="#cb32-690" aria-hidden="true" tabindex="-1"></a>    gap <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">50</span><span class="sc">:</span><span class="dv">150</span>, <span class="dv">1</span>)</span>
-<span id="cb32-691"><a href="#cb32-691" aria-hidden="true" tabindex="-1"></a>    genes_demo <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(genes_demo, <span class="fu">tibble</span>(</span>
-<span id="cb32-692"><a href="#cb32-692" aria-hidden="true" tabindex="-1"></a>      <span class="at">seq_id =</span> s, <span class="at">start =</span> pos, <span class="at">end =</span> pos <span class="sc">+</span> len,</span>
-<span id="cb32-693"><a href="#cb32-693" aria-hidden="true" tabindex="-1"></a>      <span class="at">strand =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"+"</span>, <span class="st">"-"</span>), <span class="dv">1</span>),</span>
-<span id="cb32-694"><a href="#cb32-694" aria-hidden="true" tabindex="-1"></a>      <span class="at">name =</span> <span class="fu">paste0</span>(<span class="st">"gene_"</span>, i),</span>
-<span id="cb32-695"><a href="#cb32-695" aria-hidden="true" tabindex="-1"></a>      <span class="at">type =</span> <span class="st">"CDS"</span></span>
-<span id="cb32-696"><a href="#cb32-696" aria-hidden="true" tabindex="-1"></a>    ))</span>
-<span id="cb32-697"><a href="#cb32-697" aria-hidden="true" tabindex="-1"></a>    pos <span class="ot">&lt;-</span> pos <span class="sc">+</span> len <span class="sc">+</span> gap</span>
-<span id="cb32-698"><a href="#cb32-698" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (pos <span class="sc">&gt;</span> seqs_demo<span class="sc">$</span>length[seqs_demo<span class="sc">$</span>seq_id <span class="sc">==</span> s] <span class="sc">-</span> <span class="dv">500</span>) <span class="cf">break</span></span>
-<span id="cb32-699"><a href="#cb32-699" aria-hidden="true" tabindex="-1"></a>  }</span>
-<span id="cb32-700"><a href="#cb32-700" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb32-701"><a href="#cb32-701" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-702"><a href="#cb32-702" aria-hidden="true" tabindex="-1"></a><span class="co"># enlaces simulados entre genes</span></span>
-<span id="cb32-703"><a href="#cb32-703" aria-hidden="true" tabindex="-1"></a>links_demo <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
-<span id="cb32-704"><a href="#cb32-704" aria-hidden="true" tabindex="-1"></a>  <span class="at">seq_id =</span> <span class="fu">c</span>(<span class="st">"pCM5"</span>, <span class="st">"pCM5"</span>, <span class="st">"pCM6"</span>),</span>
-<span id="cb32-705"><a href="#cb32-705" aria-hidden="true" tabindex="-1"></a>  <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">15000</span>, <span class="dv">2000</span>),</span>
-<span id="cb32-706"><a href="#cb32-706" aria-hidden="true" tabindex="-1"></a>  <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">3000</span>, <span class="dv">17000</span>, <span class="dv">4000</span>),</span>
-<span id="cb32-707"><a href="#cb32-707" aria-hidden="true" tabindex="-1"></a>  <span class="at">seq_id2 =</span> <span class="fu">c</span>(<span class="st">"pCM6"</span>, <span class="st">"pCM4"</span>, <span class="st">"pCM4"</span>),</span>
-<span id="cb32-708"><a href="#cb32-708" aria-hidden="true" tabindex="-1"></a>  <span class="at">start2 =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">500</span>, <span class="dv">3000</span>),</span>
-<span id="cb32-709"><a href="#cb32-709" aria-hidden="true" tabindex="-1"></a>  <span class="at">end2 =</span> <span class="fu">c</span>(<span class="dv">4000</span>, <span class="dv">2500</span>, <span class="dv">5000</span>),</span>
-<span id="cb32-710"><a href="#cb32-710" aria-hidden="true" tabindex="-1"></a>  <span class="at">strand =</span> <span class="st">"+"</span>,</span>
-<span id="cb32-711"><a href="#cb32-711" aria-hidden="true" tabindex="-1"></a>  <span class="at">map_quality =</span> <span class="dv">50</span></span>
-<span id="cb32-712"><a href="#cb32-712" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb32-713"><a href="#cb32-713" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-714"><a href="#cb32-714" aria-hidden="true" tabindex="-1"></a><span class="co"># graficar</span></span>
-<span id="cb32-715"><a href="#cb32-715" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">seqs =</span> seqs_demo, <span class="at">genes =</span> genes_demo, <span class="at">links =</span> links_demo) <span class="sc">%&gt;%</span></span>
-<span id="cb32-716"><a href="#cb32-716" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sync</span>() <span class="sc">+</span></span>
-<span id="cb32-717"><a href="#cb32-717" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">offset =</span> <span class="fl">0.12</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">fill =</span> <span class="st">"gray50"</span>) <span class="sc">+</span></span>
-<span id="cb32-718"><a href="#cb32-718" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
-<span id="cb32-719"><a href="#cb32-719" aria-hidden="true" tabindex="-1"></a>  <span class="co"># geom_bin_label(aes(label = paste0(seq_id, "\n", length, " bp")), hjust = 1) +</span></span>
-<span id="cb32-720"><a href="#cb32-720" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
-<span id="cb32-721"><a href="#cb32-721" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
-<span id="cb32-722"><a href="#cb32-722" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
-<span id="cb32-723"><a href="#cb32-723" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
-<span id="cb32-724"><a href="#cb32-724" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb32-725"><a href="#cb32-725" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb32-726"><a href="#cb32-726" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_blank</span>(),</span>
-<span id="cb32-727"><a href="#cb32-727" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span></span>
-<span id="cb32-728"><a href="#cb32-728" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
-<span id="cb32-729"><a href="#cb32-729" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Sintenia entre plásmidos bacterianos"</span>)</span>
-<span id="cb32-730"><a href="#cb32-730" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-731"><a href="#cb32-731" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-732"><a href="#cb32-732" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
-<span id="cb32-733"><a href="#cb32-733" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-734"><a href="#cb32-734" aria-hidden="true" tabindex="-1"></a><span class="fu"># Bonus: Solución de problemas</span></span>
-<span id="cb32-735"><a href="#cb32-735" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-736"><a href="#cb32-736" aria-hidden="true" tabindex="-1"></a><span class="fu">## Errores comunes</span></span>
+<span id="cb32-644"><a href="#cb32-644" aria-hidden="true" tabindex="-1"></a><span class="co"># Alinear</span></span>
+<span id="cb32-645"><a href="#cb32-645" aria-hidden="true" tabindex="-1"></a><span class="ex">minimap2</span> <span class="at">-x</span> asm20 reference.fna query.fna <span class="op">&gt;</span> aln.paf</span>
+<span id="cb32-646"><a href="#cb32-646" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-647"><a href="#cb32-647" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-648"><a href="#cb32-648" aria-hidden="true" tabindex="-1"></a>Formato <span class="co">[</span><span class="ot">PAF</span><span class="co">](https://github.com/lh3/miniasm/blob/master/PAF.md)</span>: 12 columnas tabuladas con coordenadas de alineamiento. <span class="in">`minimap2`</span> fue la herramienta que <span class="co">[</span><span class="ot">popularizó este formato</span><span class="co">](https://doi.org/10.1093/bioinformatics/bty191)</span>, que agrega las coordenadas de los mapeos estimados <span class="co">[</span><span class="ot">sin necesitar un alineamiento base o el detalle que da CIGAR</span><span class="co">](https://github.com/lh3/minimap2#general)</span>.</span>
+<span id="cb32-649"><a href="#cb32-649" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-650"><a href="#cb32-650" aria-hidden="true" tabindex="-1"></a><span class="fu">## Leer datos en R</span></span>
+<span id="cb32-651"><a href="#cb32-651" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-652"><a href="#cb32-652" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=FALSE}</span></span>
+<span id="cb32-653"><a href="#cb32-653" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: leer-datos</span></span>
+<span id="cb32-654"><a href="#cb32-654" aria-hidden="true" tabindex="-1"></a><span class="co">#| eval: false</span></span>
+<span id="cb32-655"><a href="#cb32-655" aria-hidden="true" tabindex="-1"></a><span class="co">#| code-summary: "Código para importar GFF3 y PAF"</span></span>
+<span id="cb32-656"><a href="#cb32-656" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-657"><a href="#cb32-657" aria-hidden="true" tabindex="-1"></a><span class="co"># Leer GFF3 de Bakta</span></span>
+<span id="cb32-658"><a href="#cb32-658" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
+<span id="cb32-659"><a href="#cb32-659" aria-hidden="true" tabindex="-1"></a>genes <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">"genoma1.gff3"</span>, <span class="at">comment =</span> <span class="st">"#"</span>, <span class="at">col_names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-660"><a href="#cb32-660" aria-hidden="true" tabindex="-1"></a>  <span class="fu">setNames</span>(<span class="fu">c</span>(<span class="st">"seq_id"</span>, <span class="st">"source"</span>, <span class="st">"type"</span>, <span class="st">"start"</span>, <span class="st">"end"</span>, </span>
+<span id="cb32-661"><a href="#cb32-661" aria-hidden="true" tabindex="-1"></a>             <span class="st">"score"</span>, <span class="st">"strand"</span>, <span class="st">"phase"</span>, <span class="st">"attributes"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb32-662"><a href="#cb32-662" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(type <span class="sc">==</span> <span class="st">"CDS"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-663"><a href="#cb32-663" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb32-664"><a href="#cb32-664" aria-hidden="true" tabindex="-1"></a>    <span class="at">name =</span> <span class="fu">str_extract</span>(attributes, <span class="st">"Name=([^;]+)"</span>, <span class="at">group =</span> <span class="dv">1</span>),</span>
+<span id="cb32-665"><a href="#cb32-665" aria-hidden="true" tabindex="-1"></a>    <span class="at">product =</span> <span class="fu">str_extract</span>(attributes, <span class="st">"product=([^;]+)"</span>, <span class="at">group =</span> <span class="dv">1</span>)</span>
+<span id="cb32-666"><a href="#cb32-666" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-667"><a href="#cb32-667" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-668"><a href="#cb32-668" aria-hidden="true" tabindex="-1"></a><span class="co"># Leer PAF</span></span>
+<span id="cb32-669"><a href="#cb32-669" aria-hidden="true" tabindex="-1"></a>links <span class="ot">&lt;-</span> <span class="fu">read_tsv</span>(<span class="st">"aln.paf"</span>, <span class="at">col_names =</span> <span class="cn">FALSE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb32-670"><a href="#cb32-670" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(</span>
+<span id="cb32-671"><a href="#cb32-671" aria-hidden="true" tabindex="-1"></a>    <span class="at">seq_id =</span> X1, <span class="at">start =</span> X3, <span class="at">end =</span> X4, <span class="at">strand =</span> X5,</span>
+<span id="cb32-672"><a href="#cb32-672" aria-hidden="true" tabindex="-1"></a>    <span class="at">seq_id2 =</span> X6, <span class="at">start2 =</span> X8, <span class="at">end2 =</span> X9,</span>
+<span id="cb32-673"><a href="#cb32-673" aria-hidden="true" tabindex="-1"></a>    <span class="at">map_match =</span> X10, <span class="at">map_length =</span> X11, <span class="at">map_quality =</span> X12</span>
+<span id="cb32-674"><a href="#cb32-674" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb32-675"><a href="#cb32-675" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-676"><a href="#cb32-676" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-677"><a href="#cb32-677" aria-hidden="true" tabindex="-1"></a><span class="fu">## Gráfico de sintenia final</span></span>
+<span id="cb32-678"><a href="#cb32-678" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-679"><a href="#cb32-679" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=TRUE}</span></span>
+<span id="cb32-680"><a href="#cb32-680" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-cap: "Gráfico de sintenia entre plásmidos"</span></span>
+<span id="cb32-681"><a href="#cb32-681" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-width: 14</span></span>
+<span id="cb32-682"><a href="#cb32-682" aria-hidden="true" tabindex="-1"></a><span class="co">#| fig-height: 10</span></span>
+<span id="cb32-683"><a href="#cb32-683" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-684"><a href="#cb32-684" aria-hidden="true" tabindex="-1"></a><span class="co"># Datos simulados para demostración</span></span>
+<span id="cb32-685"><a href="#cb32-685" aria-hidden="true" tabindex="-1"></a>seqs_demo <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(<span class="at">seq_id =</span> <span class="fu">c</span>(<span class="st">"pCM5"</span>, <span class="st">"pCM6"</span>, <span class="st">"pCM4"</span>),</span>
+<span id="cb32-686"><a href="#cb32-686" aria-hidden="true" tabindex="-1"></a>  <span class="at">length =</span> <span class="fu">c</span>(<span class="dv">48895</span>, <span class="dv">50350</span>, <span class="dv">39958</span>)</span>
+<span id="cb32-687"><a href="#cb32-687" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-688"><a href="#cb32-688" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-689"><a href="#cb32-689" aria-hidden="true" tabindex="-1"></a><span class="fu">set.seed</span>(<span class="dv">42</span>)</span>
+<span id="cb32-690"><a href="#cb32-690" aria-hidden="true" tabindex="-1"></a>genes_demo <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb32-691"><a href="#cb32-691" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (s <span class="cf">in</span> seqs_demo<span class="sc">$</span>seq_id) {</span>
+<span id="cb32-692"><a href="#cb32-692" aria-hidden="true" tabindex="-1"></a>  n <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">30</span><span class="sc">:</span><span class="dv">50</span>, <span class="dv">1</span>)</span>
+<span id="cb32-693"><a href="#cb32-693" aria-hidden="true" tabindex="-1"></a>  pos <span class="ot">&lt;-</span> <span class="dv">100</span></span>
+<span id="cb32-694"><a href="#cb32-694" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> (i <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span>n) {</span>
+<span id="cb32-695"><a href="#cb32-695" aria-hidden="true" tabindex="-1"></a>    len <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">400</span><span class="sc">:</span><span class="dv">1800</span>, <span class="dv">1</span>)</span>
+<span id="cb32-696"><a href="#cb32-696" aria-hidden="true" tabindex="-1"></a>    gap <span class="ot">&lt;-</span> <span class="fu">sample</span>(<span class="dv">50</span><span class="sc">:</span><span class="dv">150</span>, <span class="dv">1</span>)</span>
+<span id="cb32-697"><a href="#cb32-697" aria-hidden="true" tabindex="-1"></a>    genes_demo <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(genes_demo, <span class="fu">tibble</span>(</span>
+<span id="cb32-698"><a href="#cb32-698" aria-hidden="true" tabindex="-1"></a>      <span class="at">seq_id =</span> s, <span class="at">start =</span> pos, <span class="at">end =</span> pos <span class="sc">+</span> len,</span>
+<span id="cb32-699"><a href="#cb32-699" aria-hidden="true" tabindex="-1"></a>      <span class="at">strand =</span> <span class="fu">sample</span>(<span class="fu">c</span>(<span class="st">"+"</span>, <span class="st">"-"</span>), <span class="dv">1</span>),</span>
+<span id="cb32-700"><a href="#cb32-700" aria-hidden="true" tabindex="-1"></a>      <span class="at">name =</span> <span class="fu">paste0</span>(<span class="st">"gene_"</span>, i),</span>
+<span id="cb32-701"><a href="#cb32-701" aria-hidden="true" tabindex="-1"></a>      <span class="at">type =</span> <span class="st">"CDS"</span></span>
+<span id="cb32-702"><a href="#cb32-702" aria-hidden="true" tabindex="-1"></a>    ))</span>
+<span id="cb32-703"><a href="#cb32-703" aria-hidden="true" tabindex="-1"></a>    pos <span class="ot">&lt;-</span> pos <span class="sc">+</span> len <span class="sc">+</span> gap</span>
+<span id="cb32-704"><a href="#cb32-704" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (pos <span class="sc">&gt;</span> seqs_demo<span class="sc">$</span>length[seqs_demo<span class="sc">$</span>seq_id <span class="sc">==</span> s] <span class="sc">-</span> <span class="dv">500</span>) <span class="cf">break</span></span>
+<span id="cb32-705"><a href="#cb32-705" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb32-706"><a href="#cb32-706" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb32-707"><a href="#cb32-707" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-708"><a href="#cb32-708" aria-hidden="true" tabindex="-1"></a><span class="co"># enlaces simulados entre genes</span></span>
+<span id="cb32-709"><a href="#cb32-709" aria-hidden="true" tabindex="-1"></a>links_demo <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb32-710"><a href="#cb32-710" aria-hidden="true" tabindex="-1"></a>  <span class="at">seq_id =</span> <span class="fu">c</span>(<span class="st">"pCM5"</span>, <span class="st">"pCM5"</span>, <span class="st">"pCM6"</span>),</span>
+<span id="cb32-711"><a href="#cb32-711" aria-hidden="true" tabindex="-1"></a>  <span class="at">start =</span> <span class="fu">c</span>(<span class="dv">1000</span>, <span class="dv">15000</span>, <span class="dv">2000</span>),</span>
+<span id="cb32-712"><a href="#cb32-712" aria-hidden="true" tabindex="-1"></a>  <span class="at">end =</span> <span class="fu">c</span>(<span class="dv">3000</span>, <span class="dv">17000</span>, <span class="dv">4000</span>),</span>
+<span id="cb32-713"><a href="#cb32-713" aria-hidden="true" tabindex="-1"></a>  <span class="at">seq_id2 =</span> <span class="fu">c</span>(<span class="st">"pCM6"</span>, <span class="st">"pCM4"</span>, <span class="st">"pCM4"</span>),</span>
+<span id="cb32-714"><a href="#cb32-714" aria-hidden="true" tabindex="-1"></a>  <span class="at">start2 =</span> <span class="fu">c</span>(<span class="dv">2000</span>, <span class="dv">500</span>, <span class="dv">3000</span>),</span>
+<span id="cb32-715"><a href="#cb32-715" aria-hidden="true" tabindex="-1"></a>  <span class="at">end2 =</span> <span class="fu">c</span>(<span class="dv">4000</span>, <span class="dv">2500</span>, <span class="dv">5000</span>),</span>
+<span id="cb32-716"><a href="#cb32-716" aria-hidden="true" tabindex="-1"></a>  <span class="at">strand =</span> <span class="st">"+"</span>,</span>
+<span id="cb32-717"><a href="#cb32-717" aria-hidden="true" tabindex="-1"></a>  <span class="at">map_quality =</span> <span class="dv">50</span></span>
+<span id="cb32-718"><a href="#cb32-718" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb32-719"><a href="#cb32-719" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-720"><a href="#cb32-720" aria-hidden="true" tabindex="-1"></a><span class="co"># graficar</span></span>
+<span id="cb32-721"><a href="#cb32-721" aria-hidden="true" tabindex="-1"></a><span class="fu">gggenomes</span>(<span class="at">seqs =</span> seqs_demo, <span class="at">genes =</span> genes_demo, <span class="at">links =</span> links_demo) <span class="sc">%&gt;%</span></span>
+<span id="cb32-722"><a href="#cb32-722" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sync</span>() <span class="sc">+</span></span>
+<span id="cb32-723"><a href="#cb32-723" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_link</span>(<span class="at">offset =</span> <span class="fl">0.12</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>, <span class="at">fill =</span> <span class="st">"gray50"</span>) <span class="sc">+</span></span>
+<span id="cb32-724"><a href="#cb32-724" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_seq</span>() <span class="sc">+</span></span>
+<span id="cb32-725"><a href="#cb32-725" aria-hidden="true" tabindex="-1"></a>  <span class="co"># geom_bin_label(aes(label = paste0(seq_id, "\n", length, " bp")), hjust = 1) +</span></span>
+<span id="cb32-726"><a href="#cb32-726" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_gene</span>(<span class="fu">aes</span>(<span class="at">fill =</span> strand), <span class="at">position =</span> <span class="st">"strand"</span>) <span class="sc">+</span></span>
+<span id="cb32-727"><a href="#cb32-727" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"+"</span> <span class="ot">=</span> <span class="st">"steelblue"</span>, <span class="st">"-"</span> <span class="ot">=</span> <span class="st">"coral"</span>)) <span class="sc">+</span></span>
+<span id="cb32-728"><a href="#cb32-728" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>() <span class="sc">+</span></span>
+<span id="cb32-729"><a href="#cb32-729" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(</span>
+<span id="cb32-730"><a href="#cb32-730" aria-hidden="true" tabindex="-1"></a>    <span class="at">panel.grid =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb32-731"><a href="#cb32-731" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.text.y =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb32-732"><a href="#cb32-732" aria-hidden="true" tabindex="-1"></a>    <span class="at">axis.title =</span> <span class="fu">element_blank</span>(),</span>
+<span id="cb32-733"><a href="#cb32-733" aria-hidden="true" tabindex="-1"></a>    <span class="at">legend.position =</span> <span class="st">"bottom"</span></span>
+<span id="cb32-734"><a href="#cb32-734" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">+</span></span>
+<span id="cb32-735"><a href="#cb32-735" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Sintenia entre plásmidos bacterianos"</span>)</span>
+<span id="cb32-736"><a href="#cb32-736" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb32-737"><a href="#cb32-737" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-738"><a href="#cb32-738" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Error <span class="pp">|</span> Causa <span class="pp">|</span> Solución <span class="pp">|</span></span>
-<span id="cb32-739"><a href="#cb32-739" aria-hidden="true" tabindex="-1"></a><span class="pp">|:-----------------------|:-----------------------|:-----------------------|</span></span>
-<span id="cb32-740"><a href="#cb32-740" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ventana gráfica tiene dimensión(es) cero`</span> <span class="pp">|</span> Sin dispositivo gráfico <span class="pp">|</span> Abrir PNG antes: <span class="in">`png("temp.png")`</span> <span class="pp">|</span></span>
-<span id="cb32-741"><a href="#cb32-741" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`objeto 'X' no encontrado`</span> en <span class="in">`geom_blank()`</span> <span class="pp">|</span> Herencia de aesthetics <span class="pp">|</span> <span class="in">`geom_blank(data = dummies, inherit.aes = FALSE)`</span> <span class="pp">|</span></span>
-<span id="cb32-742"><a href="#cb32-742" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Genes no aparecen <span class="pp">|</span> <span class="in">`seq_id`</span> no coincide <span class="pp">|</span> Verificar <span class="in">`setdiff(genes$seq_id, seqs$seq_id)`</span> <span class="pp">|</span></span>
-<span id="cb32-743"><a href="#cb32-743" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Links no aparecen <span class="pp">|</span> Coordenadas invertidas <span class="pp">|</span> Asegurar <span class="in">`start &lt; end`</span> en ambos lados <span class="pp">|</span></span>
-<span id="cb32-744"><a href="#cb32-744" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-745"><a href="#cb32-745" aria-hidden="true" tabindex="-1"></a><span class="fu">## Instalación de paquetes</span></span>
-<span id="cb32-746"><a href="#cb32-746" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-747"><a href="#cb32-747" aria-hidden="true" tabindex="-1"></a><span class="in">``` r</span></span>
-<span id="cb32-748"><a href="#cb32-748" aria-hidden="true" tabindex="-1"></a><span class="co"># Desde CRAN</span></span>
-<span id="cb32-749"><a href="#cb32-749" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">"gggenes"</span>, <span class="st">"gggenomes"</span>, <span class="st">"tidyverse"</span>))</span>
+<span id="cb32-738"><a href="#cb32-738" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
+<span id="cb32-739"><a href="#cb32-739" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-740"><a href="#cb32-740" aria-hidden="true" tabindex="-1"></a><span class="fu"># Bonus: Solución de problemas</span></span>
+<span id="cb32-741"><a href="#cb32-741" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-742"><a href="#cb32-742" aria-hidden="true" tabindex="-1"></a><span class="fu">## Errores comunes</span></span>
+<span id="cb32-743"><a href="#cb32-743" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-744"><a href="#cb32-744" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Error <span class="pp">|</span> Causa <span class="pp">|</span> Solución <span class="pp">|</span></span>
+<span id="cb32-745"><a href="#cb32-745" aria-hidden="true" tabindex="-1"></a><span class="pp">|:-----------------------|:-----------------------|:-----------------------|</span></span>
+<span id="cb32-746"><a href="#cb32-746" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`ventana gráfica tiene dimensión(es) cero`</span> <span class="pp">|</span> Sin dispositivo gráfico <span class="pp">|</span> Abrir PNG antes: <span class="in">`png("temp.png")`</span> <span class="pp">|</span></span>
+<span id="cb32-747"><a href="#cb32-747" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> <span class="in">`objeto 'X' no encontrado`</span> en <span class="in">`geom_blank()`</span> <span class="pp">|</span> Herencia de aesthetics <span class="pp">|</span> <span class="in">`geom_blank(data = dummies, inherit.aes = FALSE)`</span> <span class="pp">|</span></span>
+<span id="cb32-748"><a href="#cb32-748" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Genes no aparecen <span class="pp">|</span> <span class="in">`seq_id`</span> no coincide <span class="pp">|</span> Verificar <span class="in">`setdiff(genes$seq_id, seqs$seq_id)`</span> <span class="pp">|</span></span>
+<span id="cb32-749"><a href="#cb32-749" aria-hidden="true" tabindex="-1"></a><span class="pp">|</span> Links no aparecen <span class="pp">|</span> Coordenadas invertidas <span class="pp">|</span> Asegurar <span class="in">`start &lt; end`</span> en ambos lados <span class="pp">|</span></span>
 <span id="cb32-750"><a href="#cb32-750" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-751"><a href="#cb32-751" aria-hidden="true" tabindex="-1"></a><span class="co"># Si falla, desde r-universe</span></span>
-<span id="cb32-752"><a href="#cb32-752" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"gggenes"</span>, <span class="at">repos =</span> <span class="st">"https://wilkox.r-universe.dev"</span>)</span>
-<span id="cb32-753"><a href="#cb32-753" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb32-754"><a href="#cb32-754" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb32-755"><a href="#cb32-755" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
+<span id="cb32-751"><a href="#cb32-751" aria-hidden="true" tabindex="-1"></a><span class="fu">## Instalación de paquetes</span></span>
+<span id="cb32-752"><a href="#cb32-752" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-753"><a href="#cb32-753" aria-hidden="true" tabindex="-1"></a><span class="in">``` r</span></span>
+<span id="cb32-754"><a href="#cb32-754" aria-hidden="true" tabindex="-1"></a><span class="co"># Desde CRAN</span></span>
+<span id="cb32-755"><a href="#cb32-755" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">"gggenes"</span>, <span class="st">"gggenomes"</span>, <span class="st">"tidyverse"</span>))</span>
+<span id="cb32-756"><a href="#cb32-756" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-757"><a href="#cb32-757" aria-hidden="true" tabindex="-1"></a><span class="co"># Si falla, desde r-universe</span></span>
+<span id="cb32-758"><a href="#cb32-758" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"gggenes"</span>, <span class="at">repos =</span> <span class="st">"https://wilkox.r-universe.dev"</span>)</span>
+<span id="cb32-759"><a href="#cb32-759" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb32-760"><a href="#cb32-760" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-761"><a href="#cb32-761" aria-hidden="true" tabindex="-1"></a>------------------------------------------------------------------------</span>
 </code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal=""><i class="bi"></i></button></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

@@ -10,13 +10,4 @@ dplyr
 stringr
 forcats
 lubridate
-ggfittext
 patchwork
-generics
-BiocGenerics
-S4Vectors
-IRanges
-Seqinfo
-GenomicRanges
-rtracklayer
-scales
